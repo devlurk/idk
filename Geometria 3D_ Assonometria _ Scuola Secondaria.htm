@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geometria 3D: Assonometria | Scuola Secondaria</title>
+    <script src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/three.min.js"></script>
+    <script src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/OrbitControls.min.js"></script>
+    <script src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/jspdf.umd.min.js"></script>
+
+    <link href="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/css2.css" rel="stylesheet">
+
+    <style>
+        /* CSS RESET e FONDAMENTALI */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif; background: #eef1f5; color: #2c3e50;
+            height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* HEADER FISSO */
+        header {
+            flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 20px; background: linear-gradient(90deg, #3498db, #2c7ac0); color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); z-index: 10; flex-wrap: nowrap; gap: 15px;
+        }
+        
+        h1 { font-size: 0.95rem; margin-bottom: 0; font-weight: 500; opacity: 0.95; flex-grow: 1; line-height: 1.2; white-space: normal; }
+
+        .header-links { flex-shrink: 0; display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+
+        .home-button {
+            text-decoration: none; padding: 6px 10px; background: #e74c3c; color: white;
+            border-radius: 6px; font-weight: 600; font-size: 0.75rem; display: flex;
+            align-items: center; gap: 5px; transition: background 0.3s, transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border: none; cursor: pointer; white-space: nowrap;
+        }
+        .home-button:hover { background: #c0392b; transform: translateY(-1px); }
+        .save-btn { background: #27ae60; } .save-btn:hover { background: #219653; }
+        .load-btn { background: #8e44ad; } .load-btn:hover { background: #9b59b6; }
+        
+        /* CONTENITORE PRINCIPALE FLESSIBILE */
+        .container { display: flex; flex: 1 1 auto; padding: 15px; gap: 15px; overflow: hidden; position: relative; }
+
+        .left-section, .controls-section { 
+            flex: 0 0 320px; display: flex; flex-direction: column; gap: 15px;
+            overflow-y: auto; padding-right: 5px; scrollbar-width: thin;
+        }
+        .left-section::-webkit-scrollbar, .controls-section::-webkit-scrollbar { width: 6px; }
+        .left-section::-webkit-scrollbar-thumb, .controls-section::-webkit-scrollbar-thumb { background-color: #bdc3c7; border-radius: 3px; }
+
+        /* PANNELLI E DRAG */
+        .upload-panel, .control-panel {
+            background: #ffffff; border-radius: 12px; padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); border: 1px solid #e0e0e0; flex-shrink: 0;
+            transition: box-shadow 0.2s ease;
+        }
+        .is-dragging {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+            opacity: 0.95;
+        }
+        
+        /* TITOLI PANNELLI (DRAG HANDLE) */
+        .control-panel h2, .upload-panel h2 { 
+            margin-bottom: 12px; font-size: 1.1rem; color: #3498db; font-weight: 600; 
+            border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; 
+            cursor: grab; position: relative;
+        }
+        .control-panel h2:active, .upload-panel h2:active { cursor: grabbing; }
+        .drag-icon { margin-left: auto; font-size: 0.9rem; color: #bdc3c7; }
+        .pin-icon { transition: transform 0.2s; font-size: 1.1rem; }
+        .pin-icon:hover { transform: scale(1.2); }
+
+        .upload-input-group { display: flex; flex-direction: column; gap: 10px; }
+        .data-input-group input[type="text"] { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; width: 100%; box-sizing: border-box; }
+
+        #image-preview {
+            width: 100%; height: 200px; background: #ecf0f1; border: 1px dashed #bdc3c7;
+            border-radius: 8px; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; margin-top: 15px; text-align: center;
+        }
+        #image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .canvas-section { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; overflow: hidden; }
+
+        #canvas-container {
+            flex: 1; background: #ffffff; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); border: 2px solid #ddd; position: relative; min-height: 300px;
+        }
+        #canvas-container canvas { display: block; width: 100%; height: 100%; outline: none; }
+
+        .view-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        #color-palette { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; margin-top: 5px; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, box-shadow 0.15s; }
+        .color-swatch.selected { border-color: #3498db; transform: scale(1.15); box-shadow: 0 0 8px rgba(52, 152, 219, 0.6); }
+
+        button {
+            padding: 10px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s ease; font-weight: 600; display: flex; align-items: center; justify-content: center;
+            gap: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); font-size: 0.9rem; width: 100%;
+        }
+        button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+        button:active { transform: translateY(0); }
+        .action-buttons { display: flex; flex-direction: column; gap: 10px; }
+        
+        .start-button { background: #f39c12 !important; }
+        .download-button { background: #27ae60 !important; }
+        .download-image-button { background: #8e44ad !important; }
+        .toggle-mode-button { background: #3498db !important; }
+        .active-mode { background: #2ecc71 !important; transform: translateY(-1px) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.2) !important; }
+
+        footer { flex: 0 0 auto; text-align: center; padding: 10px; background: #34495e; color: #ecf0f1; font-size: 0.8rem; }
+        .icon { font-size: 1.1rem; }
+
+        /* MODAL RIPRISTINO */
+        #restore-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; 
+            align-items: center; z-index: 3000;
+        }
+        .modal-content {
+            background: #ffffff; border-radius: 12px; padding: 25px; 
+            max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+        }
+        .modal-content h3 { color: #3498db; margin-bottom: 15px; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .modal-content p { font-size: 0.95rem; color: #2c3e50; margin-bottom: 20px; line-height: 1.4; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+
+        /* LOADING SPINNER */
+        .pdf-loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; color: white; font-size: 1.5rem; flex-direction: column; gap: 20px; }
+        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        button, input, select, label, .shape-btn, .color-swatch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        #canvas-container canvas { touch-action: none; }
+
+        @media (max-width: 1100px) {
+            .container { flex-direction: column; overflow-y: auto; }
+            body { overflow: auto; height: auto; min-height: 100vh; }
+            .left-section, .controls-section { flex: none; width: 100%; overflow: visible; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+            .canvas-section { flex: none; order: -1; }
+            #canvas-container { height: 500px; }
+        }
+        @media (max-width: 600px) { 
+            header { flex-direction: column; text-align: center; gap: 10px; padding: 10px; }
+            .header-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            h1 { font-size: 0.85rem; text-align: center; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Modellazione 3D e Proiezioni Ortogonali</h1>
+        <div class="header-links">
+            <button id="save-state-btn" class="home-button save-btn"><span class="icon">💾</span> Salva File</button>
+            <button id="load-state-btn" class="home-button load-btn"><span class="icon">📂</span> Carica File</button>
+            <a class="home-button" href="https://cheery-khapse-9b6aa8.netlify.app/"><span class="icon">🏠</span> Home</a>
+        </div>
+    </header>
+
+    <div class="container" id="main-container">
+        <section class="left-section">
+            <div class="upload-panel panel-draggable">
+                <h2><span class="icon">🖼️</span> Immagine Riferimento <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div class="upload-input-group">
+                    <input type="file" id="image-upload" accept="image/*">
+                    <p style="font-size: 0.8rem; color: #7f8c8d; margin-top:5px;">Carica uno schizzo o foto come guida.</p>
+                </div>
+                <div id="image-preview">
+                    <span id="preview-text" style="color: #7f8c8d; padding: 10px; font-size: 0.9rem;">Anteprima</span>
+                </div>
+            </div>
+            
+            <div class="control-panel panel-draggable">
+                <h2><span class="icon">📄</span> Documentazione <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div class="action-buttons">
+                    <button id="download-pdf" class="download-button"><span class="icon">📥</span> Esporta PDF</button>
+                    <button id="download-jpg" class="download-image-button"><span class="icon">🖼️</span> Salva JPG</button> 
+                    <button id="upload-solution" class="toggle-mode-button"><span class="icon">📤</span> Carica Soluzione</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="canvas-section">
+            <div id="canvas-container">
+                <div style="position: absolute; top: 15px; right: 15px; z-index: 10; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                    <button id="toggle-grid-size" style="width: auto; background: #8e44ad; padding: 8px 15px; font-size: 0.85rem;"><span class="icon">📐</span> Griglia: 3x3</button>
+                    <label style="background: white; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd; font-weight: 600; color: #2c3e50;">
+                        <input type="checkbox" id="toggle-helpers" checked="checked" style="cursor: pointer;"> Mostra Griglia
+                    </label>
+                </div>
+            <canvas style="display: block; width: 697px; height: 433px;" width="1394" height="866"></canvas></div>
+            
+            <div class="control-panel panel-draggable" style="flex-shrink: 0;">
+                <h2><span class="icon">👤</span> Dati Studente <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div class="data-input-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="input-nome" placeholder="Nome" style="flex: 1; min-width: 120px;">
+                    <input type="text" id="input-cognome" placeholder="Cognome" style="flex: 1; min-width: 120px;">
+                    <input type="text" id="input-classe" placeholder="Classe" style="flex: 0 0 80px;">
+                </div>
+            </div>
+        </section>
+
+        <section class="controls-section">
+            <div class="control-panel panel-draggable">
+                <h2><span class="icon">👁️</span> Viste <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div class="view-buttons">
+                    <button id="front-view"><span class="icon">➡️</span> P.V.</button>
+                    <button id="top-view"><span class="icon">⬆️</span> P.O.</button>
+                    <button id="left-view"><span class="icon">⬅️</span> P.L.</button>
+                    <button id="iso-view-1"><span class="icon">🧊</span> Iso</button>
+                </div>
+            </div>
+
+            <div class="control-panel panel-draggable">
+                <h2><span class="icon">🛠️</span> Azioni <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div class="action-buttons mode-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="mode-add" class="toggle-mode-button active-mode" data-mode="add"><span class="icon">➕</span> Agg.</button>
+                    <button id="mode-subtract" class="toggle-mode-button" data-mode="subtract"><span class="icon">➖</span> Rim.</button>
+                    <button id="mode-color" class="toggle-mode-button" data-mode="color"><span class="icon">🎨</span> Col.</button>
+                    <button id="mode-rotate" class="toggle-mode-button" data-mode="rotate"><span class="icon">🖱️</span> Sel./Ruota</button>
+                </div>
+                
+                <div id="rotate-controls" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px;">
+                    <button id="btn-rot-x" style="background:#e67e22; padding:8px; font-size:0.85rem;" title="Ruota sull'asse X"><span class="icon">🔄</span> X</button>
+                    <button id="btn-rot-y" style="background:#e67e22; padding:8px; font-size:0.85rem;" title="Ruota sull'asse Y"><span class="icon">🔄</span> Y</button>
+                    <button id="btn-rot-z" style="background:#e67e22; padding:8px; font-size:0.85rem;" title="Ruota sull'asse Z"><span class="icon">🔄</span> Z</button>
+                </div>
+
+                <div class="action-buttons" style="margin-top: 10px;">
+                    <button id="start-model" class="start-button"><span class="icon">🧱</span> Reset / Nuovo Cubo</button>
+                </div>
+            </div>
+
+            <div class="control-panel panel-draggable">
+                <h2><span class="icon">🎨</span> Palette <span class="pin-icon" style="display: none; cursor: pointer; margin-left: 10px;" title="Riaggancia pannello">📌</span><span class="drag-icon">✋</span></h2>
+                <div id="color-palette">
+                    <div class="color-swatch selected" style="background-color: #ff3333;" data-color="#ff3333"></div> 
+                    <div class="color-swatch" style="background-color: #33ff33;" data-color="#33ff33"></div> 
+                    <div class="color-swatch" style="background-color: #3333ff;" data-color="#3333ff"></div> 
+                    <div class="color-swatch" style="background-color: #ffff33;" data-color="#ffff33"></div> 
+                    <div class="color-swatch" style="background-color: #ff33ff;" data-color="#ff33ff"></div> 
+                    <div class="color-swatch" style="background-color: #33ffff;" data-color="#33ffff"></div> 
+                    <div class="color-swatch" style="background-color: #ff9933;" data-color="#ff9933"></div> 
+                    <div class="color-swatch" style="background-color: #9933ff;" data-color="#9933ff"></div> 
+                    <div class="color-swatch" style="background-color: #33ff99;" data-color="#33ff99"></div> 
+                    <div class="color-swatch" style="background-color: #ff3399;" data-color="#ff3399"></div> 
+                </div>
+
+                <div style="margin-top: 15px; border-top: 2px solid #ecf0f1; padding-top: 12px;">
+                    <h2 style="font-size: 1rem; color: #3498db; margin-bottom: 8px; border:none; padding:0; cursor: default;"><span class="icon"></span> Spicchi speciali</h2>
+                    <div id="shape-palette" style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        <button class="shape-btn active-shape" data-shape="box" style="flex:1; padding: 4px; background:#ecf0f1; border: 2px solid #3498db; border-radius:6px; cursor:pointer; box-shadow:none; display:flex; justify-content:center; align-items:center; height:42px;">
+                            <img src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/cubetto.png" alt="Cubo" style="max-height: 28px; max-width: 100%; object-fit: contain;">
+                        </button>
+                        <button class="shape-btn" data-shape="prism" style="flex:1; padding: 4px; background:#ecf0f1; border: 2px solid transparent; border-radius:6px; cursor:pointer; box-shadow:none; display:flex; justify-content:center; align-items:center; height:42px;">
+                            <img src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/prisma.jpg" alt="Prisma" style="max-height: 28px; max-width: 100%; object-fit: contain; mix-blend-mode: multiply;">
+                        </button>
+                        <button class="shape-btn" data-shape="cylinder" style="flex:1; padding: 4px; background:#ecf0f1; border: 2px solid transparent; border-radius:6px; cursor:pointer; box-shadow:none; display:flex; justify-content:center; align-items:center; height:42px;">
+                            <img src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/quarto.png" alt="Quarto" style="max-height: 28px; max-width: 100%; object-fit: contain;">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="restore-modal">
+        <div class="modal-content">
+            <h3><span class="icon">💾</span> Progetto in Sospeso</h3>
+            <p>È stato rilevato un progetto non salvato dalla sessione precedente. Vuoi ripristinarlo o iniziare un nuovo progetto?</p>
+            <div class="modal-buttons">
+                <button id="btn-restore" style="background:#27ae60;"><span class="icon">🔄</span> Ripristina</button>
+                <button id="btn-new-project" style="background:#e74c3c;"><span class="icon">✨</span> Nuovo</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Software creato dal Docente Arch. Nicola Caridi. © 2025</p>
+    </footer>
+
+    <input type="file" id="solution-upload-hidden" accept="image/*" style="display: none;">
+    <input type="file" id="state-upload-hidden" accept=".json" style="display: none;">
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        let scene, camera, renderer, cubeGroup, controls;
+        let raycaster;
+        let mouse = new THREE.Vector2();
+        let container; 
+
+        let allCubies = []; 
+        let currentCubies = []; 
+        let currentShapeIndices = []; 
+        
+        let currentActionMode = 'add'; 
+        let selectedColor = '#ff3333'; 
+        let currentShapeType = 'box';
+
+        let uploadedImageDataURL = null; 
+        let uploadedSolutionDataURL = null; 
+        
+        let pdfCounter = 1; 
+
+        let gridSize = 3; 
+        let axesHelper, gridHelper, boundingBoxLine;
+        
+        let selectedCubie = null;
+        let selectionBox = null;
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        const FACE_COLORS = { 'X+': 0xff3333, 'X-': 0xff9933, 'Y+': 0xffff33, 'Y-': 0xffffff, 'Z+': 0x3333ff, 'Z-': 0x33ff33 };
+        const LINE_COLOR = 0x2c3e50; 
+        const CUBE_SIZE = 1;
+        const GAP = 0.03; 
+        const GRID_COLOR = 0xAAAAAA;
+        const BOUNDING_BOX_COLOR = 0x888888; 
+        let FRUSTUM_SIZE = 8; 
+        
+        const VIEWS = {
+            'front': { position: {x: 0, y: 0, z: 8}, name: 'Piano Verticale (PV)' },
+            'top': { position: {x: 0, y: 8, z: 0}, name: 'Piano Orizzontale (PO)' },
+            'left': { position: {x: 8, y: 0, z: 0}, name: 'Piano Laterale (PL)' }, 
+            'iso1': { position: {x: 6, y: 6, z: 6}, name: 'Vista 3D Isometrica' }
+        };
+
+        // ==========================================
+        // AUTO-SALVATAGGIO (LOCAL STORAGE)
+        // ==========================================
+        function saveToLocalStorage() {
+            const state = {
+                gridSize: gridSize,
+                shapeIndices: currentShapeIndices,
+                blocks: {}
+            };
+            currentCubies.forEach(cubie => {
+                state.blocks[cubie.userData.index] = {
+                    colors: cubie.material.map(m => m.color.getHexString()),
+                    shape: cubie.userData.shapeType || 'box',
+                    rotX: cubie.rotation.x,
+                    rotY: cubie.rotation.y,
+                    rotZ: cubie.rotation.z
+                };
+            });
+            localStorage.setItem('voxelBuilderState', JSON.stringify(state));
+        }
+
+        function loadFromLocalStorage() {
+            const savedState = localStorage.getItem('voxelBuilderState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    applyStateData(state);
+                    return true;
+                } catch (e) {
+                    console.error("Errore nel recupero del salvataggio automatico.", e);
+                }
+            }
+            return false;
+        }
+
+        // ==========================================
+        // PANNELLI SGANCIABILI CON RIAGGANCIO
+        // ==========================================
+        function makePanelsDraggable() {
+            const panels = document.querySelectorAll('.panel-draggable');
+            let maxZIndex = 100;
+
+            panels.forEach(panel => {
+                const header = panel.querySelector('h2');
+                if (!header) return;
+
+                // Creazione della puntina per riagganciare il pannello
+                const pinIcon = document.createElement('span');
+                pinIcon.innerHTML = '📌';
+                pinIcon.className = 'pin-icon';
+                pinIcon.style.display = 'none';
+                pinIcon.style.cursor = 'pointer';
+                pinIcon.style.marginLeft = '10px';
+                pinIcon.title = 'Riaggancia pannello';
+                
+                const dragIcon = header.querySelector('.drag-icon');
+                if (dragIcon) {
+                    header.insertBefore(pinIcon, dragIcon);
+                } else {
+                    header.appendChild(pinIcon);
+                }
+
+                let isDragging = false;
+                let startX, startY, initialLeft, initialTop;
+
+                // Evento click sulla puntina: ripristina il pannello
+                const unpinPanel = (e) => {
+                    e.stopPropagation(); // Evita di attivare il trascinamento
+                    panel.style.position = '';
+                    panel.style.top = '';
+                    panel.style.left = '';
+                    panel.style.width = '';
+                    panel.style.zIndex = '';
+                    panel.classList.remove('is-dragging');
+                    pinIcon.style.display = 'none';
+                };
+
+                pinIcon.addEventListener('mousedown', unpinPanel);
+                pinIcon.addEventListener('touchstart', unpinPanel, {passive: false});
+
+                const dragStart = (e) => {
+                    if(e.target === pinIcon || e.target.tagName.toLowerCase() === 'button' || e.target.tagName.toLowerCase() === 'input') return;
+                    
+                    isDragging = true;
+                    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                    
+                    const rect = panel.getBoundingClientRect();
+                    
+                    if(panel.style.position !== 'fixed') {
+                        panel.style.width = rect.width + 'px'; 
+                        panel.style.position = 'fixed';
+                        panel.style.left = rect.left + 'px';
+                        panel.style.top = rect.top + 'px';
+                        panel.classList.add('is-dragging');
+                        pinIcon.style.display = 'inline-block'; // Mostra la puntina
+                    }
+
+                    startX = clientX;
+                    startY = clientY;
+                    initialLeft = parseFloat(panel.style.left) || rect.left;
+                    initialTop = parseFloat(panel.style.top) || rect.top;
+
+                    maxZIndex++;
+                    panel.style.zIndex = maxZIndex;
+                    
+                    if(e.cancelable) e.preventDefault(); 
+                };
+
+                const dragMove = (e) => {
+                    if (!isDragging) return;
+                    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+                    const dx = clientX - startX;
+                    const dy = clientY - startY;
+
+                    panel.style.left = `${initialLeft + dx}px`;
+                    panel.style.top = `${initialTop + dy}px`;
+                };
+
+                const dragEnd = () => {
+                    isDragging = false;
+                };
+
+                header.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('mouseup', dragEnd);
+
+                header.addEventListener('touchstart', dragStart, {passive: false});
+                document.addEventListener('touchmove', dragMove, {passive: false});
+                document.addEventListener('touchend', dragEnd);
+            });
+        }
+
+        // ==========================================
+        // LOGICA GEOMETRICA E 3D
+        // ==========================================
+        function getIndexByCoords(x, y, z) {
+            if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || z < 0 || z >= gridSize) return null;
+            return x + y * gridSize + z * gridSize * gridSize + 1;
+        }
+        
+        function updateSceneFromIndices() {
+            cubeGroup.clear();
+            currentCubies = [];
+
+            currentShapeIndices.forEach(index => {
+                const cubie = allCubies.find(c => c.userData.index === index);
+                if (cubie) {
+                    currentCubies.push(cubie);
+                    cubeGroup.add(cubie);
+                }
+            });
+
+            centerView();
+            if (renderer && camera) renderer.render(scene, camera);
+        }
+
+        function resetCubeColors() {
+            allCubies.forEach(cubie => {
+                if (cubie.userData.originalMaterials) {
+                    cubie.material = cubie.userData.originalMaterials.map(m => m.clone()); 
+                }
+            });
+        }
+        
+        function startFullCube() {
+            const totalCubies = gridSize * gridSize * gridSize;
+            currentShapeIndices = Array.from({length: totalCubies}, (v, i) => i + 1); 
+            
+            allCubies.forEach(cubie => {
+                if (cubie.userData.originalMaterials) {
+                    cubie.material = cubie.userData.originalMaterials.map(m => m.clone()); 
+                }
+                cubie.rotation.set(0, 0, 0);
+                
+                if (cubie.userData.shapeType !== 'box') {
+                    cubie.geometry.dispose();
+                    cubie.geometry = createCustomGeometry('box');
+                    cubie.userData.shapeType = 'box';
+                    
+                    const line = cubie.children[0];
+                    if (line) {
+                        line.geometry.dispose();
+                        line.geometry = new THREE.EdgesGeometry(cubie.geometry);
+                    }
+                }
+            });
+            
+            if (selectionBox) selectionBox.visible = false;
+            selectedCubie = null;
+            document.getElementById('rotate-controls').style.display = 'none';
+
+            updateSceneFromIndices();
+            setView('iso1'); 
+            saveToLocalStorage(); // Salva lo stato iniziale
+        }
+
+        function toggleGridSize() {
+            gridSize = gridSize === 3 ? 4 : 3;
+            document.getElementById('toggle-grid-size').innerHTML = `<span class="icon">📐</span> Griglia: ${gridSize}x${gridSize}`;
+            
+            FRUSTUM_SIZE = gridSize === 3 ? 8 : 10;
+            updateRendererSize();
+            
+            addAxesAndGrid();
+            createCubeElements();
+            startFullCube();
+        }
+
+        function updateRendererSize() {
+            if (!container || !renderer || !camera) return false; 
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            if (width === 0 || height === 0) return false;
+
+            renderer.setSize(width, height);
+            if (camera.isOrthographicCamera) {
+                const aspect = width / height;
+                camera.left = -FRUSTUM_SIZE * aspect / 2;
+                camera.right = FRUSTUM_SIZE * aspect / 2;
+                camera.top = FRUSTUM_SIZE / 2;
+                camera.bottom = -FRUSTUM_SIZE / 2;
+                camera.updateProjectionMatrix();
+            }
+            renderer.render(scene, camera);
+            return true;
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f8fb); 
+            raycaster = new THREE.Raycaster();
+            container = document.getElementById('canvas-container'); 
+            
+            const existingCanvas = container.querySelector('canvas');
+            if (existingCanvas) container.removeChild(existingCanvas);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); 
+            renderer.setPixelRatio(window.devicePixelRatio); 
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            const initialAspect = container.clientWidth / container.clientHeight || 1; 
+            camera = new THREE.OrthographicCamera(-FRUSTUM_SIZE * initialAspect / 2, FRUSTUM_SIZE * initialAspect / 2, FRUSTUM_SIZE / 2, -FRUSTUM_SIZE / 2, 0.1, 100);
+            
+            const initialView = VIEWS['iso1'].position;
+            camera.position.set(initialView.x, initialView.y, initialView.z); 
+            camera.lookAt(0, 0, 0);
+            camera.updateProjectionMatrix(); 
+            
+            container.appendChild(renderer.domElement);
+            
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.dampingFactor = 0.15; controls.rotateSpeed = 0.6; controls.screenSpacePanning = false;
+            controls.enabled = true; controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE }; 
+            
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const light = new THREE.DirectionalLight(0xffffff, 0.5); light.position.set(5, 5, 5).normalize(); scene.add(light);
+
+            let selectionBoxGeo = new THREE.BoxGeometry(CUBE_SIZE + 0.05, CUBE_SIZE + 0.05, CUBE_SIZE + 0.05);
+            let selectionBoxEdges = new THREE.EdgesGeometry(selectionBoxGeo);
+            selectionBox = new THREE.LineSegments(selectionBoxEdges, new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 }));
+            selectionBox.visible = false;
+            scene.add(selectionBox);
+            
+            addAxesAndGrid();
+            createCubeElements(); 
+            
+            const resizeObserver = new ResizeObserver(() => updateRendererSize());
+            resizeObserver.observe(container);
+            
+            setupEventListeners();
+            makePanelsDraggable();
+
+            // Tenta di caricare il salvataggio automatico, altrimenti genera cubo base
+            const savedState = localStorage.getItem('voxelBuilderState');
+            if (savedState) {
+                document.getElementById('restore-modal').style.display = 'flex';
+            } else {
+                startFullCube(); 
+            }
+            
+            animate();
+        }
+        
+        function addAxesAndGrid() {
+            if (axesHelper) scene.remove(axesHelper); if (gridHelper) scene.remove(gridHelper); if (boundingBoxLine) scene.remove(boundingBoxLine);
+
+            axesHelper = new THREE.AxesHelper(gridSize + 0.5); scene.add(axesHelper);
+            const gridVisualSize = gridSize + 3;
+            gridHelper = new THREE.GridHelper(gridVisualSize, gridVisualSize, GRID_COLOR, GRID_COLOR);
+            gridHelper.position.y = -(gridSize / 2) * CUBE_SIZE; scene.add(gridHelper);
+
+            const boundingBoxGeo = new THREE.BoxGeometry(gridSize * CUBE_SIZE, gridSize * CUBE_SIZE, gridSize * CUBE_SIZE);
+            const boundingBoxEdges = new THREE.EdgesGeometry(boundingBoxGeo);
+            boundingBoxLine = new THREE.LineSegments(boundingBoxEdges, new THREE.LineBasicMaterial({ color: BOUNDING_BOX_COLOR, linewidth: 1 }));
+            boundingBoxLine.position.set(0, 0, 0); scene.add(boundingBoxLine);
+
+            const toggleElement = document.getElementById('toggle-helpers');
+            const showHelpers = toggleElement ? toggleElement.checked : true;
+            axesHelper.visible = showHelpers; gridHelper.visible = showHelpers; boundingBoxLine.visible = showHelpers;
+        }
+
+        function createCustomGeometry(type) {
+            const size = CUBE_SIZE - GAP;
+            const s = size / 2;
+            if (type === 'prism') {
+                const vertices = new Float32Array([-s, -s, s,  s, -s, s,  -s, s, s,  -s, -s, -s,  s, -s, -s,  -s, s, -s]);
+                const indices = [ 0, 1, 2,  5, 4, 3,  0, 3, 4,  0, 4, 1,  1, 4, 5,  1, 5, 2,  2, 5, 3,  2, 3, 0 ];
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(vertices, 3)); geo.setIndex(indices); geo.computeVertexNormals();
+                geo.addGroup(0, 3, 0); geo.addGroup(3, 3, 1); geo.addGroup(6, 6, 2); geo.addGroup(12, 6, 3); geo.addGroup(18, 6, 4);
+                return geo;
+            } else if (type === 'cylinder') {
+                const shape = new THREE.Shape(); shape.moveTo(-s, -s); shape.lineTo(s, -s); shape.absarc(-s, -s, size, 0, Math.PI/2, false);
+                const geo = new THREE.ExtrudeGeometry(shape, { depth: size, curveSegments: 16, bevelEnabled: false });
+                geo.translate(0, 0, -s); return geo;
+            } else {
+                return new THREE.BoxGeometry(size, size, size);
+            }
+        }
+
+        function createCubeElementMesh() {
+            const geometry = createCustomGeometry('box');
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: FACE_COLORS['X+'] }), new THREE.MeshBasicMaterial({ color: FACE_COLORS['X-'] }), 
+                new THREE.MeshBasicMaterial({ color: FACE_COLORS['Y+'] }), new THREE.MeshBasicMaterial({ color: FACE_COLORS['Y-'] }), 
+                new THREE.MeshBasicMaterial({ color: FACE_COLORS['Z+'] }), new THREE.MeshBasicMaterial({ color: FACE_COLORS['Z-'] })  
+            ];
+            const cubelet = new THREE.Mesh(geometry, materials);
+            cubelet.userData.originalMaterials = materials.map(m => m.clone()); cubelet.userData.shapeType = 'box';
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: LINE_COLOR, linewidth: 2 }));
+            cubelet.add(line); return cubelet;
+        }
+
+        function createCubeElements() {
+            if (cubeGroup) scene.remove(cubeGroup);
+            cubeGroup = new THREE.Group(); allCubies = [];
+            for (let z = 0; z < gridSize; z++) { 
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        const cubelet = createCubeElementMesh();
+                        const posX = (x - (gridSize - 1) / 2) * CUBE_SIZE; const posY = (y - (gridSize - 1) / 2) * CUBE_SIZE; const posZ = (z - (gridSize - 1) / 2) * CUBE_SIZE;
+                        cubelet.position.set(posX, posY, posZ);
+                        cubelet.userData = { ...cubelet.userData, x, y, z, index: getIndexByCoords(x, y, z) };
+                        allCubies.push(cubelet);
+                    }
+                }
+            }
+            scene.add(cubeGroup);
+        }
+        
+        function setView(viewType) {
+            const view = VIEWS[viewType]; if (!view) return;
+            cubeGroup.rotation.set(0, 0, 0); camera.position.set(view.position.x, view.position.y, view.position.z);
+            controls.target.set(0, 0, 0); camera.lookAt(0, 0, 0); controls.update();
+            const isIsoView = (viewType === 'iso1'); controls.enabled = isIsoView;
+            if (isIsoView) { updateOrbitControls(currentActionMode); } else { controls.mouseButtons = { LEFT: null, MIDDLE: null, RIGHT: null }; }
+            renderer.render(scene, camera);
+        }
+        
+        function centerView() { cubeGroup.position.set(0, 0, 0); controls.target.set(0, 0, 0); controls.update(); }
+
+        function updateOrbitControls(mode) {
+            if (!controls) return;
+            if (['color', 'add', 'subtract', 'rotate'].includes(mode)) {
+                controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+            } else {
+                controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+            }
+        }
+        
+        function setupModeButtons() {
+            const buttons = document.querySelectorAll('.mode-buttons button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentActionMode = this.dataset.mode;
+                    document.querySelector('.mode-buttons .active-mode')?.classList.remove('active-mode');
+                    this.classList.add('active-mode');
+                    updateOrbitControls(currentActionMode); 
+
+                    if (currentActionMode === 'rotate') {
+                        if (selectedCubie) document.getElementById('rotate-controls').style.display = 'grid';
+                    } else {
+                        document.getElementById('rotate-controls').style.display = 'none';
+                        if (selectionBox) selectionBox.visible = false;
+                        selectedCubie = null;
+                    }
+                });
+            });
+
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelector('.shape-btn.active-shape')?.classList.remove('active-shape');
+                    this.classList.add('active-shape');
+                    document.querySelectorAll('.shape-btn').forEach(b => b.style.borderColor = 'transparent');
+                    this.style.borderColor = '#3498db';
+                    currentShapeType = this.dataset.shape;
+                });
+            });
+
+            document.getElementById('btn-rot-x').addEventListener('click', () => rotateSelectedObject(new THREE.Vector3(1, 0, 0)));
+            document.getElementById('btn-rot-y').addEventListener('click', () => rotateSelectedObject(new THREE.Vector3(0, 1, 0)));
+            document.getElementById('btn-rot-z').addEventListener('click', () => rotateSelectedObject(new THREE.Vector3(0, 0, 1)));
+        }
+
+        function rotateSelectedObject(axis) {
+            if (!selectedCubie) return;
+            selectedCubie.rotateOnWorldAxis(axis, Math.PI / 2);
+            selectedCubie.rotation.x = Math.round(selectedCubie.rotation.x / (Math.PI / 2)) * (Math.PI / 2);
+            selectedCubie.rotation.y = Math.round(selectedCubie.rotation.y / (Math.PI / 2)) * (Math.PI / 2);
+            selectedCubie.rotation.z = Math.round(selectedCubie.rotation.z / (Math.PI / 2)) * (Math.PI / 2);
+            selectedCubie.updateMatrix();
+            renderer.render(scene, camera);
+            saveToLocalStorage(); // Salva dopo rotazione
+        }
+
+        function setupColorPalette() {
+            const swatches = document.querySelectorAll('#color-palette .color-swatch');
+            swatches.forEach(swatch => {
+                swatch.addEventListener('click', function() {
+                    document.querySelector('#color-palette .color-swatch.selected')?.classList.remove('selected');
+                    this.classList.add('selected');
+                    selectedColor = this.dataset.color;
+                });
+            });
+        }
+        
+        function onCanvasClick(event) {
+            if (!controls.enabled) return; 
+            if (event.type === 'click' && event.button !== 0) return; 
+            if (event.preventDefault) event.preventDefault();
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            const clientX = event.clientX; const clientY = event.clientY;
+
+            mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(currentCubies);
+            if (intersects.length === 0) return;
+
+            const intersection = intersects[0];
+            const object = intersection.object; 
+            const indexToHandle = object.userData.index;
+
+            switch (currentActionMode) {
+                case 'add':
+                case 'subtract':
+                    let shapeChanged = false;
+                    if (currentActionMode === 'add') {
+                        const normal = intersection.face.normal; const cubieCoords = object.userData;
+                        let newX = Math.round(cubieCoords.x + normal.x); let newY = Math.round(cubieCoords.y + normal.y); let newZ = Math.round(cubieCoords.z + normal.z);
+                        if (newX >= 0 && newX < gridSize && newY >= 0 && newY < gridSize && newZ >= 0 && newZ < gridSize) {
+                            const newIndex = getIndexByCoords(newX, newY, newZ);
+                            if (newIndex && !currentShapeIndices.includes(newIndex)) {
+                                currentShapeIndices.push(newIndex); currentShapeIndices.sort((a, b) => a - b);
+                                const targetCubie = allCubies.find(c => c.userData.index === newIndex);
+                                if (targetCubie) {
+                                    targetCubie.geometry.dispose(); targetCubie.geometry = createCustomGeometry(currentShapeType);
+                                    targetCubie.rotation.set(0, 0, 0); targetCubie.userData.shapeType = currentShapeType;
+                                    const line = targetCubie.children[0]; if (line) { line.geometry.dispose(); line.geometry = new THREE.EdgesGeometry(targetCubie.geometry); }
+                                }
+                                shapeChanged = true;
+                            }
+                        }
+                    } else { 
+                        currentShapeIndices = currentShapeIndices.filter(index => index !== indexToHandle); shapeChanged = true;
+                        if (object === selectedCubie) { selectedCubie = null; selectionBox.visible = false; document.getElementById('rotate-controls').style.display = 'none'; }
+                    }
+
+                    if (shapeChanged) { 
+                        updateSceneFromIndices(); 
+                        saveToLocalStorage(); // Salva dopo aggiunta/rimozione
+                    }
+                    break;
+
+                case 'color':
+                    let matIndex = intersection.face ? intersection.face.materialIndex : undefined;
+                    if (matIndex === undefined) matIndex = Math.floor(intersection.faceIndex / 2);
+                    if (Array.isArray(object.material) && object.material.length > 0) {
+                        const safeIndex = matIndex % object.material.length;
+                        if (object.material[safeIndex]) {
+                            const newMaterial = object.material[safeIndex].clone(); newMaterial.color.set(selectedColor); object.material[safeIndex] = newMaterial;
+                            renderer.render(scene, camera);
+                            saveToLocalStorage(); // Salva dopo colorazione
+                        }
+                    }
+                    break;
+
+                case 'rotate':
+                    selectedCubie = object; selectionBox.position.copy(selectedCubie.position); selectionBox.visible = true;
+                    document.getElementById('rotate-controls').style.display = 'grid'; renderer.render(scene, camera);
+                    break;
+            }
+        }
+
+        // ==========================================
+        // GESTIONE STATI E FILE
+        // ==========================================
+        function saveState() {
+            const state = { gridSize: gridSize, shapeIndices: currentShapeIndices, blocks: {} };
+            currentCubies.forEach(cubie => {
+                state.blocks[cubie.userData.index] = {
+                    colors: cubie.material.map(m => m.color.getHexString()), shape: cubie.userData.shapeType || 'box',
+                    rotX: cubie.rotation.x, rotY: cubie.rotation.y, rotZ: cubie.rotation.z
+                };
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "cubo_stato.json");
+            document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
+        }
+
+        function applyStateData(state) {
+            if (state.gridSize && state.gridSize !== gridSize) {
+                gridSize = state.gridSize;
+                document.getElementById('toggle-grid-size').innerHTML = `<span class="icon">📐</span> Griglia: ${gridSize}x${gridSize}`;
+                FRUSTUM_SIZE = gridSize === 3 ? 8 : 10;
+                updateRendererSize(); addAxesAndGrid(); createCubeElements();
+            }
+            if (state.shapeIndices) {
+                currentShapeIndices = state.shapeIndices; resetCubeColors(); updateSceneFromIndices();
+            }
+            
+            if (state.blocks || state.colors) {
+                currentCubies.forEach(cubie => {
+                    const blockData = state.blocks ? state.blocks[cubie.userData.index] : null;
+                    const oldColorData = state.colors ? state.colors[cubie.userData.index] : null;
+                    
+                    if (blockData || Array.isArray(oldColorData)) {
+                        const shapeType = blockData ? blockData.shape : 'box';
+                        let rotX = 0, rotY = 0, rotZ = 0;
+                        if (blockData && blockData.rotX !== undefined) { rotX = blockData.rotX; rotY = blockData.rotY; rotZ = blockData.rotZ; }
+                        else if (blockData && blockData.rot !== undefined) { rotY = blockData.rot * (Math.PI / 2); }
+                        
+                        cubie.geometry.dispose(); cubie.geometry = createCustomGeometry(shapeType);
+                        cubie.rotation.set(rotX, rotY, rotZ); cubie.userData.shapeType = shapeType;
+                        
+                        const line = cubie.children[0];
+                        if (line) { line.geometry.dispose(); line.geometry = new THREE.EdgesGeometry(cubie.geometry); }
+
+                        const hexArray = blockData ? blockData.colors : oldColorData;
+                        if (hexArray && Array.isArray(hexArray)) {
+                            hexArray.forEach((hex, i) => { if(cubie.material[i]) cubie.material[i].color.setHex(parseInt(hex, 16)); });
+                        }
+                    }
+                });
+                
+                if (selectionBox) selectionBox.visible = false; selectedCubie = null;
+                document.getElementById('rotate-controls').style.display = 'none';
+                if (renderer && scene && camera) renderer.render(scene, camera);
+            }
+        }
+
+        function loadState(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const state = JSON.parse(e.target.result);
+                    applyStateData(state);
+                    saveToLocalStorage(); // Aggiorna il salvataggio locale con il file importato
+                    event.target.value = null;
+                } catch (error) { alert("Impossibile caricare il file di stato."); }
+            };
+            reader.readAsText(file);
+        }
+        
+        function handleImageUpload(event) {
+            const file = event.target.files[0]; const preview = document.getElementById('image-preview'); const previewText = document.getElementById('preview-text');
+            const existingImg = preview.querySelector('img'); if (existingImg) preview.removeChild(existingImg);
+            if (previewText) previewText.style.display = 'none';
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageDataURL = e.target.result; 
+                    const img = document.createElement('img'); img.src = e.target.result; preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            } else { uploadedImageDataURL = null; if (previewText) previewText.style.display = 'block'; }
+        }
+        
+        function handleSolutionUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader(); reader.onload = function(e) { uploadedSolutionDataURL = e.target.result; alert('Soluzione caricata!'); event.target.value = null; };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function createTemporarySceneForCapture() {
+            const tempScene = new THREE.Scene(); tempScene.background = new THREE.Color(0xf5f8fb);
+            const tempCamera = new THREE.OrthographicCamera(-FRUSTUM_SIZE / 2, FRUSTUM_SIZE / 2, FRUSTUM_SIZE / 2, -FRUSTUM_SIZE / 2, 0.1, 100);
+            const tempRenderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); tempRenderer.setSize(800, 800); 
+            const tempCubeGroup = new THREE.Group();
+            currentShapeIndices.forEach(index => {
+                const originalCubie = allCubies.find(c => c.userData.index === index);
+                if (originalCubie) { const clonedCubie = originalCubie.clone(); clonedCubie.material = originalCubie.material.map(m => m.clone()); tempCubeGroup.add(clonedCubie); }
+            });
+            tempScene.add(tempCubeGroup);
+            const showHelpers = document.getElementById('toggle-helpers').checked;
+            if (showHelpers) {
+                const tempAxesHelper = new THREE.AxesHelper(gridSize + 0.5); tempScene.add(tempAxesHelper);
+                const gridVisualSize = gridSize + 3; const tempGridHelper = new THREE.GridHelper(gridVisualSize, gridVisualSize, GRID_COLOR, GRID_COLOR);
+                tempGridHelper.position.y = -(gridSize / 2) * CUBE_SIZE; tempScene.add(tempGridHelper);
+                const boundingBoxGeo = new THREE.BoxGeometry(gridSize * CUBE_SIZE, gridSize * CUBE_SIZE, gridSize * CUBE_SIZE);
+                const boundingBoxLine = new THREE.LineSegments(new THREE.EdgesGeometry(boundingBoxGeo), new THREE.LineBasicMaterial({ color: BOUNDING_BOX_COLOR, linewidth: 1 }));
+                boundingBoxLine.position.set(0, 0, 0); tempScene.add(boundingBoxLine);
+            }
+            tempScene.add(new THREE.AmbientLight(0xffffff, 0.8)); const light = new THREE.DirectionalLight(0xffffff, 0.5); light.position.set(5, 5, 5).normalize(); tempScene.add(light);
+            return { tempScene, tempCamera, tempRenderer, tempCubeGroup };
+        }
+        
+        function captureViewWithTemporaryScene(viewType) {
+            const { tempScene, tempCamera, tempRenderer, tempCubeGroup } = createTemporarySceneForCapture();
+            const view = VIEWS[viewType]; tempCamera.position.set(view.position.x, view.position.y, view.position.z); tempCamera.lookAt(0, 0, 0);
+            if (viewType !== 'iso1') tempCubeGroup.rotation.set(0, 0, 0);
+            tempRenderer.render(tempScene, tempCamera); const dataURL = tempRenderer.domElement.toDataURL('image/jpeg', 0.9); tempRenderer.dispose(); return dataURL;
+        }
+        
+        async function generateUNIPDF() {
+            const loadingDiv = document.createElement('div'); loadingDiv.className = 'pdf-loading'; loadingDiv.innerHTML = `<div class="spinner"></div><div>Generazione PDF in corso...</div>`; document.body.appendChild(loadingDiv);
+            try {
+                const nome = document.getElementById('input-nome').value.trim() || 'N/D'; const cognome = document.getElementById('input-cognome').value.trim() || 'N/D'; const classe = document.getElementById('input-classe').value.trim() || 'N/D';
+                const isoData = captureViewWithTemporaryScene('iso1'); const pvData = captureViewWithTemporaryScene('front'); const poData = captureViewWithTemporaryScene('top'); const plData = captureViewWithTemporaryScene('left');  
+                const doc = new jsPDF('p', 'mm', 'a4'); const pageWidth = doc.internal.pageSize.getWidth(); const margin = 15; let currentY = margin;
+                const now = new Date(); const elaboratedTitle = `Elaborato prodotto in data: ${now.toLocaleDateString('it-IT')} - ore: ${now.toLocaleTimeString('it-IT')}`;
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.text(elaboratedTitle, pageWidth / 2, currentY, { align: 'center' }); currentY += 8;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.text(`Nome: ${nome} | Cognome: ${cognome} | Classe: ${classe}`, pageWidth / 2, currentY, { align: 'center' }); currentY += 15;
+                const viewSize = 70; const gap = 10; const totalGridWidth = 2 * viewSize + gap; const startX = (pageWidth - totalGridWidth) / 2; doc.setFontSize(10);
+                let pvX = startX; let pvY = currentY; doc.text(VIEWS['front'].name, pvX, pvY - 2); doc.addImage(pvData, 'JPEG', pvX, pvY, viewSize, viewSize);
+                let plX = startX + viewSize + gap; let plY = currentY; doc.text(VIEWS['left'].name, plX, plY - 2); doc.addImage(plData, 'JPEG', plX, plY, viewSize, viewSize);
+                currentY += viewSize + 15;
+                let poX = startX; let poY = currentY; doc.text(VIEWS['top'].name, poX, poY - 2); doc.addImage(poData, 'JPEG', poX, poY, viewSize, viewSize);
+                let isoX = startX + viewSize + gap; let isoY = currentY; doc.text(VIEWS['iso1'].name, isoX, isoY - 2); doc.addImage(isoData, 'JPEG', isoX, isoY, viewSize, viewSize);
+                currentY += viewSize + 15; 
+                let imageToPrint = uploadedSolutionDataURL || uploadedImageDataURL; let imageTitle = uploadedSolutionDataURL ? "Immagine Soluzione di Confronto:" : (uploadedImageDataURL ? "Immagine di Riferimento:" : "");
+                if (imageToPrint) {
+                    if (currentY + 80 > doc.internal.pageSize.getHeight()) { doc.addPage(); currentY = margin; }
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.text(imageTitle, margin, currentY); currentY += 5;
+                    const maxImageWidth = pageWidth - 2 * margin; const maxImageHeight = 60; const imgInfo = doc.getImageProperties(imageToPrint);
+                    let finalImgWidth = imgInfo.width; let finalImgHeight = imgInfo.height; const aspectRatio = imgInfo.width / imgInfo.height;
+                    if (finalImgWidth > maxImageWidth) { finalImgWidth = maxImageWidth; finalImgHeight = finalImgWidth / aspectRatio; }
+                    if (finalImgHeight > maxImageHeight) { finalImgHeight = maxImageHeight; finalImgWidth = finalImgHeight * aspectRatio; }
+                    const imgX = (pageWidth - finalImgWidth) / 2; doc.addImage(imageToPrint, imgInfo.fileType, imgX, currentY, finalImgWidth, finalImgHeight);
+                }
+                const safeCognome = cognome.replace(/[^a-z0-9]/gi, '_').toLowerCase(); const safeClasse = classe.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const filename = `${pdfCounter.toString().padStart(2, '0')}_proiezioni_modello_${safeCognome}_${safeClasse}.pdf`;
+                doc.save(filename); pdfCounter++;
+            } catch (error) { alert("Errore durante la generazione del PDF. Controlla la console."); } finally { document.body.removeChild(loadingDiv); }
+        }
+
+        function save3DViewAsJPG() {
+            try {
+                renderer.render(scene, camera); const dataURL = renderer.domElement.toDataURL('image/jpeg');
+                const link = document.createElement('a'); link.href = dataURL; link.download = 'modello_3D.jpg'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } catch (error) { alert("Impossibile salvare l'immagine."); }
+        }
+        
+        function setupEventListeners() {
+            setupModeButtons();
+
+            document.getElementById('front-view').addEventListener('click', () => setView('front'));
+            document.getElementById('top-view').addEventListener('click', () => setView('top'));
+            document.getElementById('left-view').addEventListener('click', () => setView('left'));
+            document.getElementById('iso-view-1').addEventListener('click', () => setView('iso1'));
+            
+            document.getElementById('toggle-helpers').addEventListener('change', (e) => {
+                const visible = e.target.checked;
+                if (axesHelper) axesHelper.visible = visible; if (gridHelper) gridHelper.visible = visible; if (boundingBoxLine) boundingBoxLine.visible = visible;
+                renderer.render(scene, camera);
+            });
+            
+            document.getElementById('toggle-grid-size').addEventListener('click', toggleGridSize);
+            
+            document.getElementById('save-state-btn').addEventListener('click', saveState);
+            document.getElementById('load-state-btn').addEventListener('click', () => document.getElementById('state-upload-hidden').click() );
+            document.getElementById('state-upload-hidden').addEventListener('change', loadState);
+
+            setupColorPalette();
+            
+            document.getElementById('start-model').addEventListener('click', startFullCube); 
+            document.getElementById('download-pdf').addEventListener('click', generateUNIPDF);
+            document.getElementById('download-jpg').addEventListener('click', save3DViewAsJPG); 
+            
+            document.getElementById('image-upload').addEventListener('change', handleImageUpload);
+            document.getElementById('upload-solution').addEventListener('click', () => document.getElementById('solution-upload-hidden').click() );
+            document.getElementById('solution-upload-hidden').addEventListener('change', handleSolutionUpload);
+            
+            renderer.domElement.addEventListener('contextmenu', (event) => { event.preventDefault(); event.stopPropagation(); }, false);
+            renderer.domElement.addEventListener('click', onCanvasClick, false);
+
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
+            }, { passive: true });
+
+            renderer.domElement.addEventListener('touchend', (e) => {
+                if (e.changedTouches.length === 1) {
+                    const touchEndX = e.changedTouches[0].clientX; const touchEndY = e.changedTouches[0].clientY;
+                    const distance = Math.sqrt(Math.pow(touchEndX - touchStartX, 2) + Math.pow(touchEndY - touchStartY, 2));
+                    if (distance < 10) { onCanvasClick({ clientX: touchEndX, clientY: touchEndY, preventDefault: () => {} }); }
+                }
+            }, { passive: false });
+
+            // Listener per il Modal di ripristino
+            document.getElementById('btn-restore').addEventListener('click', () => {
+                document.getElementById('restore-modal').style.display = 'none';
+                if (!loadFromLocalStorage()) {
+                    startFullCube();
+                }
+            });
+
+            document.getElementById('btn-new-project').addEventListener('click', () => {
+                document.getElementById('restore-modal').style.display = 'none';
+                localStorage.removeItem('voxelBuilderState');
+                startFullCube();
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update(); 
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        window.addEventListener('load', init);
+    </script>
+
+<script async="" src="Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria_files/hud" data-nf-variant="public" data-netlify-site-id="4fa6fad2-f759-4089-a67f-bb59bf02fa31" data-app-host="app.netlify.com"></script>
+<iframe id="nl-badge-frame" title="Powered by Netlify" style="position: fixed; bottom: 0px; right: 0px; border: 0px; margin: 0px; padding: 0px; background: transparent; color-scheme: dark; z-index: 2147483645; width: 197px; height: 64px; clip-path: path(&quot;M 3 3 H 184 V 51 H 3 Z&quot;);" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;color-scheme&quot; content=&quot;dark&quot;&gt;&lt;style&gt;
+    :root{--nl-vw:1400px;--nl-vh:700px}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+    body{display:flex;align-items:flex-end;justify-content:flex-end;height:100vh;
+      padding:8px 18px 18px 8px;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#f4f9f9;-webkit-font-smoothing:antialiased}
+    .nl-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:max-content;max-width:calc(var(--nl-vw,100vw) - 26px)}
+    button{font-family:inherit;cursor:pointer}
+    :focus-visible{outline:2px solid #32e6e2;outline-offset:2px;border-radius:6px}
+    .nl-icon-btn{position:relative;flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid transparent;background:transparent;color:#d5e3e6;transition:background .15s ease,color .15s ease}
+    .nl-icon-btn:hover{background:rgba(255,255,255,0.08);color:#f4f9f9}
+    .nl-tap::after{content:&quot;&quot;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:max(100%,44px);height:max(100%,44px)}
+    @keyframes nl-rise{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+  
+      .nl-card{position:relative;display:none;width:min(340px,calc(var(--nl-vw,100vw) - 26px));max-height:calc(var(--nl-vh,100vh) - 84px);overflow-y:auto;background:linear-gradient(180deg,#132832 0%,#0e1e25 100%);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:18px;transform-origin:bottom right;animation:nl-rise .3s cubic-bezier(.34,1.4,.4,1) both}
+      .nl-card.open{display:block}
+      .nl-card-close{position:absolute;top:10px;right:10px}
+      .nl-card h2{margin:0;padding-right:30px;font-size:16px;font-weight:750;letter-spacing:-0.015em;line-height:1.35}
+      .nl-card h2 em{font-style:normal;background:linear-gradient(90deg,#32e6e2,#4d7cfe,#9a6bff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+      .nl-card p{margin:8px 0 0;font-size:12.5px;color:#d5e3e6}
+      .nl-prompt{position:relative;margin-top:14px;background:#10222b;border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:10px 12px;transition:border-color .15s ease,box-shadow .15s ease}
+      .nl-prompt:focus-within{border-color:#05bdba;box-shadow:0 0 0 3px rgba(5,189,186,0.18)}
+      .nl-prompt textarea{display:block;width:100%;height:38px;resize:none;border:0;outline:none;background:transparent;color:#f4f9f9;font:inherit;font-size:13px;line-height:19px;padding:0 28px 0 0}
+      .nl-prompt textarea::placeholder{color:#a9bdc2}
+      .nl-send{position:absolute;right:9px;bottom:9px;width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#05bdba;color:#02191b;transition:background .15s ease}
+      .nl-send:hover{background:#32e6e2}
+      @media (pointer: coarse){
+        .nl-prompt textarea{font-size:16px;line-height:21px;height:42px}
+      }
+      .nl-or{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#a9bdc2}
+      .nl-or::before,.nl-or::after{content:&quot;&quot;;flex:1;height:1px;background:rgba(255,255,255,0.09)}
+      .nl-drop{display:flex;align-items:center;justify-content:space-between;gap:6px;text-decoration:none;background:#1b3a45;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;color:#cfe0e3;transition:background .15s ease,color .15s ease,border-color .15s ease}
+      .nl-drop:hover{background:#224753;color:#f4f9f9;border-color:rgba(50,230,226,0.3)}
+      .nl-drop .nl-arrow{transition:transform .18s cubic-bezier(.34,1.4,.4,1)}
+      .nl-drop:hover .nl-arrow{transform:translateX(3px)}
+      .nl-badge{display:flex;align-items:center;gap:9px;white-space:nowrap;border:1px solid rgba(255,255,255,0.09);background:linear-gradient(180deg,#142b34,#0e1e25);color:#f4f9f9;border-radius:999px;padding:9px 14px 9px 11px;font-size:13px;font-weight:600;letter-spacing:0.01em;transition:border-color .2s ease}
+      .nl-badge:hover{border-color:rgba(50,230,226,0.26)}
+      .nl-hide{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:#a9bdc2;font-size:11.5px;font-weight:600;padding:4px;border-radius:8px;transition:color .15s ease}
+      .nl-hide:hover{color:#d5e3e6;text-decoration:underline}
+      .nl-badge-label{color:#d5e3e6;font-weight:500}
+      .nl-badge-brand{font-weight:750}
+    &lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+      &lt;div class=&quot;nl-wrap&quot;&gt;
+        &lt;section class=&quot;nl-card&quot; id=&quot;nl-card&quot; aria-label=&quot;Build your own site on Netlify&quot;&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-icon-btn nl-tap nl-card-close&quot; id=&quot;nl-card-close&quot; aria-label=&quot;Close&quot;&gt;&lt;svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.9&quot; stroke-linecap=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+          &lt;h2&gt;&lt;em&gt;Build your own site with Netlify&lt;/em&gt;&lt;/h2&gt;
+          &lt;p&gt;Describe what you want, and an AI agent designs, builds and deploys it in minutes.&lt;/p&gt;
+          &lt;form class=&quot;nl-prompt&quot; action=&quot;https://app.netlify.com/start&quot; method=&quot;get&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;textarea name=&quot;prompt&quot; rows=&quot;2&quot; required maxlength=&quot;300&quot; autocomplete=&quot;off&quot;
+                      enterkeyhint=&quot;go&quot;
+                      placeholder=&quot;A shop for my handmade surfboards&amp;hellip;&quot;
+                      aria-label=&quot;Describe the site you want to build&quot;&gt;&lt;/textarea&gt;
+            &lt;button type=&quot;submit&quot; class=&quot;nl-send nl-tap&quot; aria-label=&quot;Build this site&quot;&gt;&lt;svg width=&quot;13&quot; height=&quot;13&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 12.75v-9.5M3.9 7.35 8 3.25l4.1 4.1&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_source&quot; value=&quot;netlify_badge&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_campaign&quot; value=&quot;loops&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_medium&quot; value=&quot;owned&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_content&quot; value=&quot;prompt&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_id&quot; value=&quot;4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot;&gt;
+            
+          &lt;/form&gt;
+          &lt;div class=&quot;nl-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/div&gt;
+          &lt;a class=&quot;nl-drop&quot; href=&quot;https://app.netlify.com/drop?utm_source=netlify_badge&amp;utm_campaign=loops&amp;utm_medium=owned&amp;utm_content=drop&amp;utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;span&gt;Drop a site you already have&lt;/span&gt;&lt;span class=&quot;nl-arrow&quot; aria-hidden=&quot;true&quot;&gt;&amp;rarr;&lt;/span&gt;
+          &lt;/a&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-hide&quot; id=&quot;nl-hide&quot;&gt;Hide this badge&lt;/button&gt;
+        &lt;/section&gt;
+        &lt;button type=&quot;button&quot; class=&quot;nl-badge&quot; id=&quot;nl-badge&quot; aria-expanded=&quot;false&quot; aria-controls=&quot;nl-card&quot;
+                aria-label=&quot;Powered by Netlify — build your own site&quot;&gt;
+          &lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 32 32&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;path fill=&quot;#fff&quot; d=&quot;M17.9922 18.3225H14.005L13.6746 17.9921V14.005L14.005 13.6746H17.9922L18.3226 14.005V17.9921L17.9922 18.3225Z&quot;/&gt;
+    &lt;g fill=&quot;#05BDBA&quot;&gt;
+      &lt;path d=&quot;M9.6958 24.3311H9.35705L7.6661 22.6401V22.3041L10.2511 19.7164L12.042 19.7191L12.2808 19.9552V21.7461L9.6958 24.3311Z&quot;/&gt;
+      &lt;path d=&quot;M7.6661 9.69576V9.35701L9.35705 7.66606H9.6958L12.2808 10.2511V12.0392L12.042 12.2808H10.2511L7.6661 9.69576Z&quot;/&gt;
+      &lt;path d=&quot;M10.0457 17.4369H0.205466L0 17.2314V14.7658L0.205466 14.5603H10.0457L10.2511 14.7658V17.2314L10.0457 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M31.7945 17.4369H21.9544L21.7489 17.2314V14.7658L21.9544 14.5603H31.7945L32 14.7658V17.2314L31.7945 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 10.0456V2.66547L14.7686 2.46001H17.2343L17.4396 2.66547V10.0456L17.2343 10.2511H14.7686L14.5631 10.0456Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 29.3316V21.9515L14.7686 21.746H17.2343L17.4396 21.9515V29.3316L17.2343 29.5371H14.7686L14.5631 29.3316Z&quot;/&gt;
+    &lt;/g&gt;&lt;/svg&gt;
+          &lt;span&gt;&lt;span class=&quot;nl-badge-label&quot;&gt;Powered by&lt;/span&gt; &lt;span class=&quot;nl-badge-brand&quot;&gt;Netlify&lt;/span&gt;&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;script&gt;
+        
+    function nlSend(){
+      var wrap=document.querySelector('.nl-wrap'),boxes=[];
+      for(var i=0;i&lt;wrap.children.length;i++){
+        var c=wrap.children[i];
+        if(!c.offsetWidth||!c.offsetHeight)continue;
+        boxes.push({x:c.offsetLeft-wrap.offsetLeft+8,
+                    y:c.offsetTop-wrap.offsetTop+8,
+                    w:c.offsetWidth,h:c.offsetHeight});
+      }
+      parent.postMessage({nlHud:'resize',
+        width:wrap.offsetWidth+26,
+        height:wrap.offsetHeight+26,
+        boxes:boxes},'*');
+    }
+    function nlSendSoon(){requestAnimationFrame(nlSend);}
+    window.addEventListener('load',nlSend);
+    window.addEventListener('message',function(e){
+      if(e.source!==parent||!e.data||e.data.nlHud!=='viewport')return;
+      var s=document.documentElement.style;
+      s.setProperty('--nl-vw',e.data.w+'px');
+      s.setProperty('--nl-vh',e.data.h+'px');
+      document.documentElement.classList.toggle('nl-narrow',e.data.w&lt;600);
+      nlSendSoon();
+    });
+    var nlCoarse=window.matchMedia('(pointer: coarse)').matches;
+    function nlSubmit(form){
+      if(form.requestSubmit)return form.requestSubmit();
+      if(form.checkValidity&amp;&amp;!form.checkValidity())
+        return form.reportValidity&amp;&amp;form.reportValidity();
+      form.submit();
+    }
+  
+        var badge=document.getElementById('nl-badge'),card=document.getElementById('nl-card'),
+            box=card.querySelector('textarea');
+        function setOpen(open){
+          card.classList.toggle('open',open);
+          badge.setAttribute('aria-expanded',open?'true':'false');
+          nlSendSoon();
+          if(open&amp;&amp;!nlCoarse)box.focus();
+        }
+        box.addEventListener('keydown',function(e){
+          if(e.key==='Enter'&amp;&amp;!e.shiftKey){e.preventDefault();nlSubmit(box.form);}
+        });
+        badge.addEventListener('click',function(){setOpen(!card.classList.contains('open'));});
+        document.getElementById('nl-card-close').addEventListener('click',function(){setOpen(false);badge.focus();});
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&amp;&amp;card.classList.contains('open')){setOpen(false);badge.focus();}
+        });
+        document.getElementById('nl-hide').addEventListener('click',function(){
+          parent.postMessage({nlHud:'state',value:'hidden'},'*');
+        });
+      &lt;/script&gt;
+    &lt;/body&gt;&lt;/html&gt;" data-nl-ready="1"></iframe></body></html>

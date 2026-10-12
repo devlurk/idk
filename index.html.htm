@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<!-- Ottimizzazione completa per tutti i dispositivi mobili -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GeoNONMindeducation</title>
+
+<style>
+  :root {
+    --primary: #31a34a;
+    --secondary: #1f7a36;
+    --bg-color: #f4f9f5;
+    --text-dark: #333;
+    --text-light: #555;
+    --card-shadow: 0 4px 12px rgba(49, 163, 74, 0.08);
+    --border-radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- SCHERMATA DI AVVISO E CONSENSO D'USO --- */
+  #consent-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 1.5rem;
+  }
+
+  .consent-container {
+    background: white;
+    padding: 2.2rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .consent-container h2 {
+    color: var(--primary);
+    margin-top: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .consent-container p {
+    color: var(--text-dark);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .consent-container ul {
+    color: var(--text-dark);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    text-align: left;
+    padding-left: 1.2rem;
+    margin: 0.8rem 0;
+  }
+
+  .consent-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 0.9rem;
+    margin: 1.2rem 0;
+  }
+
+  .consent-checkbox-row input[type="checkbox"] {
+    margin-top: 0.2rem;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .consent-checkbox-row label {
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .consent-submit {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    background-color: #cccccc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    cursor: not-allowed;
+  }
+
+  .consent-submit.enabled {
+    background-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .consent-submit.enabled:hover {
+    background-color: var(--secondary);
+  }
+
+  /* --- SCHERMATA DI ACCESSO CON PASSWORD INTEGRATA --- */
+  #password-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 1.5rem;
+  }
+
+  .password-container {
+    background: white;
+    padding: 2.5rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .password-container h2 {
+    color: var(--primary);
+    margin-top: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+
+  .password-container p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .password-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+
+  .password-input:focus {
+    border-color: var(--primary);
+  }
+
+  .password-submit {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+
+  .password-submit:hover {
+    background-color: var(--secondary);
+  }
+
+  .error-message {
+    color: #c62828;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    display: none;
+    font-weight: 600;
+  }
+
+  /* --- CONTENUTO PRINCIPALE --- */
+  #main-content {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 1.5rem 1.5rem 3.5rem 1.5rem;
+    position: relative;
+  }
+
+  .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .header-left h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .header-author {
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    margin: 0.4rem 0 0 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    max-width: 65%;
+    text-align: right;
+  }
+
+  .header-right p {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    margin: 0;
+    opacity: 0.95;
+    line-height: 1.45;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+    margin: -3rem auto 3rem auto;
+    padding: 0 1.2rem;
+    z-index: 10;
+  }
+
+  .grid-layout {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  @media (min-width: 601px) {
+    .grid-layout {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .desc-card {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .desc-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2.5rem 1.5rem;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 5px solid var(--primary);
+  }
+
+  .desc-card h2 {
+    color: var(--primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .desc-card p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .card {
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(49, 163, 74, 0.15);
+      border-color: var(--primary);
+    }
+    .card:hover .card-title {
+      color: var(--secondary);
+    }
+  }
+
+  .card:active {
+    transform: scale(0.98);
+  }
+
+  .image-container {
+    width: 100%;
+    height: 160px;
+    position: relative;
+    background: linear-gradient(135deg, #eaf5ed, #d1ebd8);
+    border-bottom: 3px solid var(--primary);
+    overflow: hidden;
+  }
+
+  .image-container::before {
+    content: "📐";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    opacity: 0.5;
+  }
+
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  .card-content {
+    padding: 1.2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+    transition: color 0.2s ease;
+  }
+
+  .card-desc {
+    color: #666;
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  footer {
+    background-color: white;
+    border-top: 1px solid #eaeaea;
+    padding: 2.5rem 1.5rem;
+    margin-top: auto;
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    text-align: center;
+  }
+
+  .copyright-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #fff4f4;
+    border: 1px solid #ffcccc;
+    color: #c62828;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .copyright-badge span.symbol {
+    background-color: #c62828;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+
+  .footer-sub {
+    font-size: 0.85rem;
+    color: #888;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .header-container {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+    .header-right {
+      max-width: 100%;
+      text-align: center;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    header {
+      padding: 1rem 1rem 3rem 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Schermata di avviso e consenso d'uso -->
+<div id="consent-screen" style="display: flex;">
+  <div class="consent-container">
+    <h2>NESSUNO AVVISO!</h2>
+    <p>HACKED BY LURK</p>
+    <p>
+      L'utilizzo è consentito <strong>BRUH</strong>,
+      e unicamente nell'ambito della disciplina <strong>"NESSSUNOOO ONLY LURKKK"</strong>, CONCESSO A TUTTI
+    </p>
+    <ul>
+      <li>HACKEDDD NESSUN DIRITTOOOOOO, BGAHAHAHAH</li>
+
+    </ul>
+    <div class="consent-checkbox-row">
+      <input type="checkbox" id="consent-check" onchange="toggleConsentButton()" checked="checked">
+      <label for="consent-check">Dichiaro di appartenere all'I.C. Comprensivo di Mal, QUI PARLA LURK, NON CE BISOGNO DI DICHIARARE NULLA, BAHAHAHAH</label>
+    </div>
+    <button id="consent-submit" class="consent-submit enabled" onclick="acceptConsent()">NON DICHIARMO NULLA</button>
+  </div>
+</div>
+
+<!-- Schermata di inserimento password -->
+<div id="password-screen" style="display: none;">
+  <div class="password-container">
+    <h2>Accesso Riservato</h2>
+    <p>Inserisci la password per accedere alla piattaforma GeoMindeducation.</p>
+    <input type="password" id="pass-input" class="password-input" placeholder="Inserisci la password" onkeydown="if(event.key === 'Enter') checkPassword()">
+    <button class="password-submit" onclick="checkPassword()">Accedi</button>
+    <div id="error-msg" class="error-message">Password non valida! Riprova.</div>
+  </div>
+</div>
+
+<!-- Contenuto principale del sito -->
+<div id="main-content" style="display: none;">
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <h1>GeoNONmindLURK</h1>
+        <p class="header-author">.</p>
+      </div>
+      <div class="header-right">
+        <p>UWUWUWUWUWU BAKA BAKAAAA</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid-layout">
+      
+      <div class="desc-card">
+        <h2>Un ambiente modificato da Lurk</h2>
+        <p>Hacked by Lurk</p>
+      </div>
+
+      <a class="card" href="file:///C:/Users/Hallow/Desktop/geotecn/GridArt%20Pro%20-%20Advanced%20CAD.htm" title="Apri Simplegrid Pro">
+        <div class="image-container">
+          <img src="GeoMindeducation%20-%20Dashboard%20Professionale_files/img-simplegrid.jpg" alt="Simplegrid" class="card-img" onerror="this.style.opacity='0'">
+        </div>
+        <div class="card-content">
+          <h2 class="card-title">Simplegrid Pro</h2>
+          <p class="card-desc">bla bla bla</p>
+        </div>
+      </a>
+
+      <a class="card" href="file:///C:/Users/Hallow/Desktop/geotecn/Laboratorio%20Geometria%203D%20-%20Didattica%202.0.htm" title="Apri Solidi 3D">
+        <div class="image-container">
+          <img src="GeoMindeducation%20-%20Dashboard%20Professionale_files/img-solidi3d.jpg" alt="Solidi 3D" class="card-img" onerror="this.style.opacity='0'">
+        </div>
+        <div class="card-content">
+          <h2 class="card-title">Solidi 3D</h2>
+          <p class="card-desc">bla bla</p>
+        </div>
+      </a>
+
+      <a class="card" href="file:///C:/Users/Hallow/Desktop/geotecn/SimplePO%20-%20Advanced%20CAD%20Edition.htm" title="Apri SimplePO">
+        <div class="image-container">
+          <img src="GeoMindeducation%20-%20Dashboard%20Professionale_files/img-simplepo.jpg" alt="SimplePO" class="card-img" onerror="this.style.opacity='0'">
+        </div>
+        <div class="card-content">
+          <h2 class="card-title">SimplePO</h2>
+          <p class="card-desc">bla</p>
+        </div>
+      </a>
+
+      <a class="card" href="file:///C:/Users/Hallow/Desktop/geotecn/Geometria%203D_%20Assonometria%20_%20Scuola%20Secondaria.htm" title="Apri CubCreator">
+        <div class="image-container">
+          <img src="GeoMindeducation%20-%20Dashboard%20Professionale_files/img-cubcreator.jpg" alt="CubCreator" class="card-img" onerror="this.style.opacity='0'">
+        </div>
+        <div class="card-content">
+          <h2 class="card-title">CubCreator</h2>
+          <p class="card-desc">...</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="copyright-badge">
+        <span class="symbol">!</span>
+        CHISSENEEE
+      </div>
+      <p class="footer-sub">uwu</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  function toggleConsentButton() {
+    const checked = document.getElementById("consent-check").checked;
+    const btn = document.getElementById("consent-submit");
+    btn.disabled = !checked;
+    btn.classList.toggle("enabled", checked);
+  }
+
+  function acceptConsent() {
+    if (!document.getElementById("consent-check").checked) return;
+    document.getElementById("consent-screen").style.display = "none";
+    document.getElementById("password-screen").style.display = "flex";
+  }
+
+  // --- PASSWORD FISSA ---
+  const CORRECT_PASSWORD = "sburrotomia1234";
+
+  function checkPassword() {
+    const inputVal = document.getElementById("pass-input").value.trim();
+    const errorMsg = document.getElementById("error-msg");
+
+    if (inputVal === CORRECT_PASSWORD) {
+      document.getElementById("password-screen").style.display = "none";
+      document.getElementById("main-content").style.display = "flex";
+    } else {
+      errorMsg.style.display = "block";
+      document.getElementById("pass-input").value = "";
+      document.getElementById("pass-input").focus();
+    }
+  }
+</script>
+
+<script async="" src="GeoMindeducation%20-%20Dashboard%20Professionale_files/hud" data-nf-variant="public" data-netlify-site-id="4fa6fad2-f759-4089-a67f-bb59bf02fa31" data-app-host="app.netlify.com"></script>
+<iframe id="nl-badge-frame" title="Powered by Netlify" style="position: fixed; bottom: 0px; right: 0px; border: 0px; margin: 0px; padding: 0px; background: transparent; color-scheme: dark; z-index: 2147483645; width: 197px; height: 64px; clip-path: path(&quot;M 3 3 H 184 V 51 H 3 Z&quot;);" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;color-scheme&quot; content=&quot;dark&quot;&gt;&lt;style&gt;
+    :root{--nl-vw:1400px;--nl-vh:700px}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+    body{display:flex;align-items:flex-end;justify-content:flex-end;height:100vh;
+      padding:8px 18px 18px 8px;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#f4f9f9;-webkit-font-smoothing:antialiased}
+    .nl-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:max-content;max-width:calc(var(--nl-vw,100vw) - 26px)}
+    button{font-family:inherit;cursor:pointer}
+    :focus-visible{outline:2px solid #32e6e2;outline-offset:2px;border-radius:6px}
+    .nl-icon-btn{position:relative;flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid transparent;background:transparent;color:#d5e3e6;transition:background .15s ease,color .15s ease}
+    .nl-icon-btn:hover{background:rgba(255,255,255,0.08);color:#f4f9f9}
+    .nl-tap::after{content:&quot;&quot;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:max(100%,44px);height:max(100%,44px)}
+    @keyframes nl-rise{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+  
+      .nl-card{position:relative;display:none;width:min(340px,calc(var(--nl-vw,100vw) - 26px));max-height:calc(var(--nl-vh,100vh) - 84px);overflow-y:auto;background:linear-gradient(180deg,#132832 0%,#0e1e25 100%);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:18px;transform-origin:bottom right;animation:nl-rise .3s cubic-bezier(.34,1.4,.4,1) both}
+      .nl-card.open{display:block}
+      .nl-card-close{position:absolute;top:10px;right:10px}
+      .nl-card h2{margin:0;padding-right:30px;font-size:16px;font-weight:750;letter-spacing:-0.015em;line-height:1.35}
+      .nl-card h2 em{font-style:normal;background:linear-gradient(90deg,#32e6e2,#4d7cfe,#9a6bff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+      .nl-card p{margin:8px 0 0;font-size:12.5px;color:#d5e3e6}
+      .nl-prompt{position:relative;margin-top:14px;background:#10222b;border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:10px 12px;transition:border-color .15s ease,box-shadow .15s ease}
+      .nl-prompt:focus-within{border-color:#05bdba;box-shadow:0 0 0 3px rgba(5,189,186,0.18)}
+      .nl-prompt textarea{display:block;width:100%;height:38px;resize:none;border:0;outline:none;background:transparent;color:#f4f9f9;font:inherit;font-size:13px;line-height:19px;padding:0 28px 0 0}
+      .nl-prompt textarea::placeholder{color:#a9bdc2}
+      .nl-send{position:absolute;right:9px;bottom:9px;width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#05bdba;color:#02191b;transition:background .15s ease}
+      .nl-send:hover{background:#32e6e2}
+      @media (pointer: coarse){
+        .nl-prompt textarea{font-size:16px;line-height:21px;height:42px}
+      }
+      .nl-or{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#a9bdc2}
+      .nl-or::before,.nl-or::after{content:&quot;&quot;;flex:1;height:1px;background:rgba(255,255,255,0.09)}
+      .nl-drop{display:flex;align-items:center;justify-content:space-between;gap:6px;text-decoration:none;background:#1b3a45;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;color:#cfe0e3;transition:background .15s ease,color .15s ease,border-color .15s ease}
+      .nl-drop:hover{background:#224753;color:#f4f9f9;border-color:rgba(50,230,226,0.3)}
+      .nl-drop .nl-arrow{transition:transform .18s cubic-bezier(.34,1.4,.4,1)}
+      .nl-drop:hover .nl-arrow{transform:translateX(3px)}
+      .nl-badge{display:flex;align-items:center;gap:9px;white-space:nowrap;border:1px solid rgba(255,255,255,0.09);background:linear-gradient(180deg,#142b34,#0e1e25);color:#f4f9f9;border-radius:999px;padding:9px 14px 9px 11px;font-size:13px;font-weight:600;letter-spacing:0.01em;transition:border-color .2s ease}
+      .nl-badge:hover{border-color:rgba(50,230,226,0.26)}
+      .nl-hide{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:#a9bdc2;font-size:11.5px;font-weight:600;padding:4px;border-radius:8px;transition:color .15s ease}
+      .nl-hide:hover{color:#d5e3e6;text-decoration:underline}
+      .nl-badge-label{color:#d5e3e6;font-weight:500}
+      .nl-badge-brand{font-weight:750}
+    &lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+      &lt;div class=&quot;nl-wrap&quot;&gt;
+        &lt;section class=&quot;nl-card&quot; id=&quot;nl-card&quot; aria-label=&quot;Build your own site on Netlify&quot;&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-icon-btn nl-tap nl-card-close&quot; id=&quot;nl-card-close&quot; aria-label=&quot;Close&quot;&gt;&lt;svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.9&quot; stroke-linecap=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+          &lt;h2&gt;&lt;em&gt;Build your own site with Netlify&lt;/em&gt;&lt;/h2&gt;
+          &lt;p&gt;Describe what you want, and an AI agent designs, builds and deploys it in minutes.&lt;/p&gt;
+          &lt;form class=&quot;nl-prompt&quot; action=&quot;https://app.netlify.com/start&quot; method=&quot;get&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;textarea name=&quot;prompt&quot; rows=&quot;2&quot; required maxlength=&quot;300&quot; autocomplete=&quot;off&quot;
+                      enterkeyhint=&quot;go&quot;
+                      placeholder=&quot;A shop for my handmade surfboards&amp;hellip;&quot;
+                      aria-label=&quot;Describe the site you want to build&quot;&gt;&lt;/textarea&gt;
+            &lt;button type=&quot;submit&quot; class=&quot;nl-send nl-tap&quot; aria-label=&quot;Build this site&quot;&gt;&lt;svg width=&quot;13&quot; height=&quot;13&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 12.75v-9.5M3.9 7.35 8 3.25l4.1 4.1&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_source&quot; value=&quot;netlify_badge&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_campaign&quot; value=&quot;loops&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_medium&quot; value=&quot;owned&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_content&quot; value=&quot;prompt&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_id&quot; value=&quot;4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot;&gt;
+          &lt;/form&gt;
+          &lt;div class=&quot;nl-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/div&gt;
+          &lt;a class=&quot;nl-drop&quot; href=&quot;https://app.netlify.com/drop?utm_source=netlify_badge&amp;utm_campaign=loops&amp;utm_medium=owned&amp;utm_content=drop&amp;utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;span&gt;Drop a site you already have&lt;/span&gt;&lt;span class=&quot;nl-arrow&quot; aria-hidden=&quot;true&quot;&gt;&amp;rarr;&lt;/span&gt;
+          &lt;/a&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-hide&quot; id=&quot;nl-hide&quot;&gt;Hide this badge&lt;/button&gt;
+        &lt;/section&gt;
+        &lt;button type=&quot;button&quot; class=&quot;nl-badge&quot; id=&quot;nl-badge&quot; aria-expanded=&quot;false&quot; aria-controls=&quot;nl-card&quot;
+                aria-label=&quot;Powered by Netlify — build your own site&quot;&gt;
+          &lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 32 32&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;path fill=&quot;#fff&quot; d=&quot;M17.9922 18.3225H14.005L13.6746 17.9921V14.005L14.005 13.6746H17.9922L18.3226 14.005V17.9921L17.9922 18.3225Z&quot;/&gt;
+    &lt;g fill=&quot;#05BDBA&quot;&gt;
+      &lt;path d=&quot;M9.6958 24.3311H9.35705L7.6661 22.6401V22.3041L10.2511 19.7164L12.042 19.7191L12.2808 19.9552V21.7461L9.6958 24.3311Z&quot;/&gt;
+      &lt;path d=&quot;M7.6661 9.69576V9.35701L9.35705 7.66606H9.6958L12.2808 10.2511V12.0392L12.042 12.2808H10.2511L7.6661 9.69576Z&quot;/&gt;
+      &lt;path d=&quot;M10.0457 17.4369H0.205466L0 17.2314V14.7658L0.205466 14.5603H10.0457L10.2511 14.7658V17.2314L10.0457 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M31.7945 17.4369H21.9544L21.7489 17.2314V14.7658L21.9544 14.5603H31.7945L32 14.7658V17.2314L31.7945 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 10.0456V2.66547L14.7686 2.46001H17.2343L17.4396 2.66547V10.0456L17.2343 10.2511H14.7686L14.5631 10.0456Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 29.3316V21.9515L14.7686 21.746H17.2343L17.4396 21.9515V29.3316L17.2343 29.5371H14.7686L14.5631 29.3316Z&quot;/&gt;
+    &lt;/g&gt;&lt;/svg&gt;
+          &lt;span&gt;&lt;span class=&quot;nl-badge-label&quot;&gt;Powered by&lt;/span&gt; &lt;span class=&quot;nl-badge-brand&quot;&gt;Netlify&lt;/span&gt;&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;script&gt;
+    function nlSend(){
+      var wrap=document.querySelector('.nl-wrap'),boxes=[];
+      for(var i=0;i&lt;wrap.children.length;i++){
+        var c=wrap.children[i];
+        if(!c.offsetWidth||!c.offsetHeight)continue;
+        boxes.push({x:c.offsetLeft-wrap.offsetLeft+8,
+                    y:c.offsetTop-wrap.offsetTop+8,
+                    w:c.offsetWidth,h:c.offsetHeight});
+      }
+      parent.postMessage({nlHud:'resize',
+        width:wrap.offsetWidth+26,
+        height:wrap.offsetHeight+26,
+        boxes:boxes},'*');
+    }
+    function nlSendSoon(){requestAnimationFrame(nlSend);}
+    window.addEventListener('load',nlSend);
+    window.addEventListener('message',function(e){
+      if(e.source!==parent||!e.data||e.data.nlHud!=='viewport')return;
+      var s=document.documentElement.style;
+      s.setProperty('--nl-vw',e.data.w+'px');
+      s.setProperty('--nl-vh',e.data.h+'px');
+      document.documentElement.classList.toggle('nl-narrow',e.data.w&lt;600);
+      nlSendSoon();
+    });
+    var nlCoarse=window.matchMedia('(pointer: coarse)').matches;
+    function nlSubmit(form){
+      if(form.requestSubmit)return form.requestSubmit();
+      if(form.checkValidity&amp;&amp;!form.checkValidity())
+        return form.reportValidity&amp;&amp;form.reportValidity();
+      form.submit();
+    }
+        var badge=document.getElementById('nl-badge'),card=document.getElementById('nl-card'),
+            box=card.querySelector('textarea');
+        function setOpen(open){
+          card.classList.toggle('open',open);
+          badge.setAttribute('aria-expanded',open?'true':'false');
+          nlSendSoon();
+          if(open&amp;&amp;!nlCoarse)box.focus();
+        }
+        box.addEventListener('keydown',function(e){
+          if(e.key==='Enter'&amp;&amp;!e.shiftKey){e.preventDefault();nlSubmit(box.form);}
+        });
+        badge.addEventListener('click',function(){setOpen(!card.classList.contains('open'));});
+        document.getElementById('nl-card-close').addEventListener('click',function(){setOpen(false);badge.focus();});
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&amp;&amp;card.classList.contains('open')){setOpen(false);badge.focus();}
+        });
+        document.getElementById('nl-hide').addEventListener('click',function(){
+          parent.postMessage({nlHud:'state',value:'hidden'},'*');
+        });
+      &lt;/script&gt;
+    &lt;/body&gt;&lt;/html&gt;" data-nl-ready="1"></iframe></body></html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="it" style="--cell-size: 26px; --grid-cols: 16; --grid-rows: 16;"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no">
+    <title>GridArt Pro - Advanced CAD</title>
+    <link href="GridArt%20Pro%20-%20Advanced%20CAD_files/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="GridArt%20Pro%20-%20Advanced%20CAD_files/style.css">
+</head>
+<body>
+
+<div class="top-banner">
+    <div class="top-left-group">
+        <p>SimpleGrid Pro</p>
+    </div>
+    <div class="file-actions">
+        <div style="position:relative;">
+            <button id="btn-save-project-menu" class="top-btn" title="Opzioni di salvataggio">💾 Salva Progetto ▾</button>
+            <div id="save-options-popup" class="save-popup" style="min-width: 200px; display: none;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.9em; margin-bottom:12px; cursor:pointer; font-weight:600;">
+                    <input type="checkbox" id="include-tutorial-checkbox" checked="checked" style="accent-color:var(--accent); width:16px; height:16px;">
+                    Includi Tutorial / Fantasma
+                </label>
+                <button id="btn-confirm-save" class="small-btn" style="display:block; background:var(--accent); color:white; border:none; width:100%; padding:6px;">Conferma e Salva</button>
+            </div>
+        </div>
+
+        <div style="position:relative;">
+            <button id="btn-new-menu" class="top-btn" title="Nuovo o Carica">📄 Nuovo ▾</button>
+            <div id="new-options-popup" class="save-popup" style="min-width: 160px; display: none;">
+                <button id="btn-new-project" class="small-btn" style="display:block; width:100%; margin-bottom:8px; text-align:left;">⬜ Nuovo Progetto</button>
+                <button id="btn-load-project-menu" class="small-btn" style="display:block; width:100%; text-align:left;">📂 Carica File</button>
+            </div>
+        </div>
+
+        <input type="file" id="file-input-project" accept=".sgp,.json" style="display:none">
+        <a href="https://cheery-khapse-9b6aa8.netlify.app/simplegrid/index.html" class="top-btn" style="background:white; color:#3498db; border-color:white;">Home</a>
+    </div>
+</div>
+
+<div class="app">
+  <div class="colonna-sx">
+    
+    <div class="pannello-controls" style="position: relative;">
+        <div class="main-toolbar">
+            
+            <div class="toolbar-group">
+                <div class="tools-row">
+                    <button id="tool-select" class="tool-button" title="Seleziona">👆</button>
+                    <button id="tool-move" class="tool-button" title="Sposta">✥</button>
+                    <button id="btn-copy" class="tool-button" title="Copia (Ctrl+C)">📄</button>
+                    <button id="btn-paste" class="tool-button" title="Incolla (Ctrl+V)">📋</button>
+                    
+                    <div style="width:1px; background:#e2e8f0; margin:0 2px;"></div>
+                    
+                    <button id="tool-line" class="tool-button selected" title="Linea">╱</button>
+                    <button id="tool-polygon-border" class="tool-button" title="Poligono">▱</button>
+                    <button id="tool-bucket" class="tool-button" title="Secchiello">💧</button>
+                    <button id="tool-circle" class="tool-button" title="Cerchio">⭕</button>
+                    <button id="tool-arc" class="tool-button" title="Arco">⌒</button>
+                    <button id="tool-arc-fill" class="tool-button" title="Spicchio">◴</button>
+                    <button id="tool-label" class="tool-button" title="Etichetta">Ⓣ</button>
+                    
+                    <div style="width:1px; background:#e2e8f0; margin:0 2px;"></div>
+                    <button id="tool-dim-line" class="tool-button" title="Quota Lineare">⬌</button>
+                    <button id="tool-dim-rad" class="tool-button" title="Quota Raggio">◉</button>
+                    <button id="tool-dim-ang" class="tool-button" title="Quota Angolo">⦠</button>
+
+                    <div style="width:1px; background:#e2e8f0; margin:0 2px;"></div>
+                    <button id="tool-erase" class="tool-button" title="Gomma">🗑️</button>
+                </div>
+            </div>
+
+            <div class="toolbar-group" style="border:none; padding-right:0;">
+                <div class="actions-column">
+                    <span id="arc-status" class="status-text"></span>
+                    <div class="action-buttons">
+                        <button id="btn-bring-front" class="small-btn" title="Porta in Primo Piano">🔝 Primo Piano</button>
+                        <button id="btn-send-back" class="small-btn" title="Manda in Secondo Piano">⬇️ Secondo Piano</button>
+                        <div style="width:1px; background:#e2e8f0; margin:0 2px;"></div>
+                        <button id="btn-toggle-tutorial-menu" class="small-btn" title="Mostra/Nascondi Strumenti Tutorial" style="background:#fef3c7; border-color:#f59e0b; color:#d97706;">📖 Tutorial</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tutorial-group" id="tutorial-toolbar-group">
+        <div class="panel-header" id="header-tutorial" style="display:flex; flex-direction:row; align-items:center; width:100%; border-bottom:1px solid #fcd34d; margin-bottom:4px; padding-bottom:2px;">
+            <span style="font-size:0.8em; font-weight:bold; color:#d97706; pointer-events:none;">Tutorial Mode</span>
+            <button id="detach-tutorial" class="small-btn" style="border:none; background:transparent; padding:0 4px;" title="Sgancia pannello">✥</button>
+        </div>
+        <div class="actions-column">
+            <span class="status-text" id="tutorial-status" style="color: #e67e22; min-width: 80px; text-align:center;">Tutorial Off</span>
+            <div class="action-buttons" style="justify-content:center;">
+                <button id="btn-tut-rec" class="small-btn" title="Registra (Cancella log precedente)">🔴 Rec</button>
+                <button id="btn-tut-undo-rec" class="small-btn danger" title="Cancella ultimo step registrato" style="display:none; padding: 2px 4px;">↩️ Canc.</button>
+                <button id="btn-tut-ghost" class="small-btn" title="Attiva/Disattiva Guida Sfondo">👻 Ghost</button>
+                <div style="width:1px; background:#fcd34d; margin:0 2px;"></div>
+                <button id="btn-tut-start" class="small-btn" title="Ricomincia da zero">⏪</button>
+                <button id="btn-tut-prev" class="small-btn" title="Passaggio Precedente">◀️</button>
+                <button id="btn-tut-play" class="small-btn" title="Play/Pausa Automatico">▶️</button>
+                <button id="btn-tut-next" class="small-btn" title="Avanza Manualmente">▶️|</button>
+                <button id="btn-tut-stop" class="small-btn" title="Chiudi Dimostrazione / Nascondi">⏹️</button>
+                <div style="width:1px; background:#fcd34d; margin:0 2px;"></div>
+                <button id="btn-tut-flatten" class="small-btn danger" title="Crea un disegno completo con tutte le forme del tutorial (anche quelle poi cancellate), navigabile con Undo/Redo, e rimuove i dati del Tutorial">🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-container" id="grid-container-ref">
+        
+        <div class="right-floating-panel">
+            
+            <div class="edit-actions-panel">
+                <button id="undo-line" class="small-btn" title="Annulla Ultimo Passo">↩️ Undo</button>
+                <button id="redo-line" class="small-btn" title="Ripristina Passo">↪️ Redo</button>
+                <button id="clear-lines" class="small-btn" title="Cancella tutto l'area di lavoro" style="width: 100%; margin-top: 2px;">🗑️ Resetta Tutto</button>
+                <button id="erase-selected" class="small-btn danger" style="display: none; width: 100%; margin-top: 2px;">❌ Elimina Sel.</button>
+            </div>
+
+            <div class="line-props-panel">
+                 <div class="stroke-buttons" id="stroke-width-buttons">
+                     <button data-width="1" class="stroke-btn" title="1px">1</button>
+                     <button data-width="3" class="stroke-btn selected" title="3px">3</button>
+                     <button data-width="4" class="stroke-btn" title="4px">4</button>
+                     <button data-width="5" class="stroke-btn" title="5px">5</button>
+                 </div>
+                 <div class="toggles-column">
+                     <label class="prop-toggle" title="Freccia Inizio"><input id="toggle-arrow-start" type="checkbox"> <span>← Freccia Iniz.</span></label>
+                     <label class="prop-toggle" title="Freccia Fine"><input id="toggle-arrow-end" type="checkbox"> <span>Freccia Fine →</span></label>
+                     <label class="prop-toggle" title="Linea Tratteggiata"><input id="toggle-dashed" type="checkbox"> <span>Tratteggio</span></label>
+                     <label class="prop-toggle" title="Blocca angolo ogni 15°"><input id="toggle-angle-snap" type="checkbox"> <span>Blocca ∠ 15°</span></label>
+                 </div>
+            </div>
+            
+            <div id="palette" class="palette-grid" role="radiogroup" aria-label="Selezione colore"><button class="color" style="background: rgb(231, 76, 60);" role="radio" title="Rosso"></button><button class="color" style="background: rgb(230, 126, 34);" role="radio" title="Arancione"></button><button class="color" style="background: rgb(241, 196, 15);" role="radio" title="Giallo"></button><button class="color" style="background: rgb(163, 228, 215);" role="radio" title="Verde Chiaro"></button><button class="color" style="background: rgb(46, 204, 113);" role="radio" title="Verde"></button><button class="color" style="background: rgb(26, 188, 156);" role="radio" title="Turchese"></button><button class="color" style="background: rgb(52, 152, 219);" role="radio" title="Celeste"></button><button class="color" style="background: rgb(36, 110, 185);" role="radio" title="Blu"></button><button class="color" style="background: rgb(155, 89, 182);" role="radio" title="Viola"></button><button class="color" style="background: rgb(215, 189, 226);" role="radio" title="Lavanda"></button><button class="color" style="background: rgb(255, 0, 255);" role="radio" title="Magenta"></button><button class="color" style="background: rgb(232, 67, 147);" role="radio" title="Rosa"></button><button class="color" style="background: rgb(245, 245, 220);" role="radio" title="Beige"></button><button class="color" style="background: rgb(243, 156, 18);" role="radio" title="Oro"></button><button class="color" style="background: rgb(121, 85, 72);" role="radio" title="Marrone"></button><button class="color" style="background: rgb(85, 107, 47);" role="radio" title="Verde Oliva"></button><button class="color" style="background: rgb(255, 255, 255);" role="radio" title="Bianco"></button><button class="color" style="background: rgb(189, 195, 199);" role="radio" title="Grigio Chiaro"></button><button class="color" style="background: rgb(149, 165, 166);" role="radio" title="Grigio"></button><button class="color selected" style="background: rgb(0, 0, 0);" role="radio" title="Nero"></button><div class="custom-color-wrapper"><button class="color" title="Colore Personalizzato (Scegli e Sostituisci)" style="display: flex; align-items: center; justify-content: center; font-size: 12px; background: rgb(255, 255, 255); position: relative; overflow: hidden;">🎨<input type="color" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; opacity: 0; cursor: pointer;" value="#000000"></button></div></div>
+
+            <div class="bottom-actions-panel">
+                 <button id="btn-save-jpg" class="tool-button" title="Salva immagine JPG">📷</button>
+                 <button id="print-pdf" class="tool-button" title="Scarica PDF">📥</button>
+                 <button id="expand-grid-btn" class="tool-button" title="Sgancia/Espandi Griglia">🔲</button>
+            </div>
+
+        </div>
+
+        <div id="cartesian-console" class="cartesian-console" style="display: none;">
+            <input type="text" id="cmd-input" placeholder="Es: P(2,3) o A(0,0,5,0,90)" autocomplete="off">
+            <button id="cmd-btn" class="small-btn" style="background: var(--accent); color: white; border:none; padding: 6px 12px; height:auto;">Disegna</button>
+            <button id="cmd-help-btn" class="small-btn" title="Guida ai comandi" style="height:auto; font-size:1em; padding:4px 8px;">❓</button>
+        </div>
+
+        <div id="grid-drag-handle" class="drag-handle-bar">
+            <span>✥ Sposta Griglia</span>
+            <div class="zoom-controls">
+                <button id="btn-zoom-out" class="zoom-btn" title="Zoom Indietro">-</button>
+                <button id="btn-zoom-in" class="zoom-btn" title="Zoom Avanti">+</button>
+            </div>
+            <button id="close-grid-expanded-btn" class="close-expanded-btn">❌ Chiudi</button>
+        </div>
+
+        <div class="grid-wrapper">
+             <div id="coord-top" class="coordinates horizontal" style="display: grid;"><div class="coordinate-label">A</div><div class="coordinate-label">B</div><div class="coordinate-label">C</div><div class="coordinate-label">D</div><div class="coordinate-label">E</div><div class="coordinate-label">F</div><div class="coordinate-label">G</div><div class="coordinate-label">H</div><div class="coordinate-label">I</div><div class="coordinate-label">J</div><div class="coordinate-label">K</div><div class="coordinate-label">L</div><div class="coordinate-label">M</div><div class="coordinate-label">N</div><div class="coordinate-label">O</div><div class="coordinate-label">P</div></div>
+             <div id="coord-left" class="coordinates vertical" style="display: grid;"><div class="coordinate-label">16</div><div class="coordinate-label">15</div><div class="coordinate-label">14</div><div class="coordinate-label">13</div><div class="coordinate-label">12</div><div class="coordinate-label">11</div><div class="coordinate-label">10</div><div class="coordinate-label">9</div><div class="coordinate-label">8</div><div class="coordinate-label">7</div><div class="coordinate-label">6</div><div class="coordinate-label">5</div><div class="coordinate-label">4</div><div class="coordinate-label">3</div><div class="coordinate-label">2</div><div class="coordinate-label">1</div></div>
+             
+             <div id="main-grid" class="grid" aria-label="Griglia per il disegno geometrico" style="width: 416px; height: 416px;">
+                <canvas id="grid-bg" aria-hidden="true" style="left: 0px; top: 0px; width: 416px; height: 416px;" width="832" height="832"></canvas> 
+                <canvas id="line-perm" aria-hidden="true" style="left: 0px; top: 0px; width: 416px; height: 416px;" width="832" height="832"></canvas>
+                <canvas id="line-preview" aria-hidden="true" style="left: 0px; top: 0px; width: 416px; height: 416px;" width="832" height="832"></canvas>
+             <div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div><div class="cell" style="border: 1px solid var(--cell-border);"></div></div>
+        </div>
+    </div>
+  </div>
+
+  <div class="colonna-dx">
+    
+    <div class="pannello-controls" id="panel-grid-options">
+        <div class="panel-header" id="header-grid-options">
+            <h3>Opzioni Griglia</h3>
+            <button id="detach-grid-options" class="small-btn" title="Sgancia pannello">✥ Sgancia</button>
+        </div>
+        <div class="grid-control-item">
+            <label>Visibilità:</label>
+            <div class="control-buttons">
+                <button id="toggle-grid" title="Mostra/Nascondi Griglia">👁️</button>
+            </div>
+        </div>
+        
+        <div class="grid-control-item">
+            <label>Modello:</label>
+            <div class="control-buttons" style="display:flex; gap:5px; width: 100%;">
+                <button id="toggle-iso" title="Passa a Isometrica" style="flex:1; padding: 4px 2px; font-size: 0.8em; white-space: nowrap;">
+                   🔳 Standard
+                </button>
+                <button id="toggle-cartesian" title="Passa a Cartesiana" style="flex:1; padding: 4px 2px; font-size: 0.8em; white-space: nowrap;">
+                   📈 Cartesiana
+                </button>
+            </div>
+        </div>
+
+        <div class="grid-control-item" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+             <label style="margin:0; padding-right:5px;">Sub/Snap:</label>
+             <div class="control-buttons" style="display:flex; align-items:center; gap:15px;">
+                 <label class="prop-toggle" style="font-size:0.95em; color: var(--accent);">
+                     <input id="toggle-subgrid" type="checkbox"> <span>Sub (1/2)</span>
+                 </label>
+                 <div style="width:1px; height:16px; background:#cbd5e1;"></div>
+                 <label class="prop-toggle" style="font-size:0.95em; color: var(--accent);">
+                     <input id="toggle-grid-snap" type="checkbox" checked="checked"> <span>Snap G.</span>
+                 </label>
+                 <label class="prop-toggle" style="font-size:0.95em; color: var(--accent);">
+                     <input id="toggle-object-snap" type="checkbox" checked="checked"> <span>Snap O.</span>
+                 </label>
+             </div>
+        </div>
+        <div class="grid-control-item" style="position:relative;">
+             <label>Punti/Etichette:</label>
+             <div class="control-buttons">
+                 <button id="btn-visibility-filter" class="small-btn" title="Nascondi punti ed etichette per categoria">👁️‍🗨️ Filtra</button>
+             </div>
+             <div id="visibility-dropdown" class="visibility-dropdown" style="display:none;">
+                 <div class="visibility-dropdown-title">Etichette</div>
+                 <div class="visibility-col-headers">
+                     <span></span><span>Nascondi</span><span>Seleziona</span>
+                 </div>
+                 <div class="visibility-check-row">
+                     <span class="visibility-check-text">Lettere maiuscole (A, B, C…)</span>
+                     <input type="checkbox" id="vis-hide-upper" title="Nascondi">
+                     <input type="checkbox" id="vis-select-upper" title="Seleziona">
+                 </div>
+                 <div class="visibility-check-row">
+                     <span class="visibility-check-text">Lettere minuscole (a, b, c…)</span>
+                     <input type="checkbox" id="vis-hide-lower" title="Nascondi">
+                     <input type="checkbox" id="vis-select-lower" title="Seleziona">
+                 </div>
+                 <div class="visibility-check-row">
+                     <span class="visibility-check-text">Numeri (1, 2, 3…)</span>
+                     <input type="checkbox" id="vis-hide-numbers" title="Nascondi">
+                     <input type="checkbox" id="vis-select-numbers" title="Seleziona">
+                 </div>
+                 <div class="context-menu-divider"></div>
+                 <div class="visibility-dropdown-title">Punti per colore</div>
+                 <div class="visibility-col-headers">
+                     <span></span><span>Nascondi</span><span>Seleziona</span>
+                 </div>
+                 <div id="visibility-color-list"></div>
+                 <div class="context-menu-divider"></div>
+                 <div class="visibility-dropdown-title">Linee per spessore</div>
+                 <div class="visibility-col-headers">
+                     <span></span><span>Nascondi</span><span>Seleziona</span>
+                 </div>
+                 <div id="visibility-linewidth-list"></div>
+                 <div class="context-menu-divider"></div>
+                 <div class="visibility-dropdown-title">Linee per colore</div>
+                 <div class="visibility-col-headers">
+                     <span></span><span>Nascondi</span><span>Seleziona</span>
+                 </div>
+                 <div id="visibility-linecolor-list"></div>
+             </div>
+        </div>
+        <div class="grid-control-item">
+             <label>Auto-Fit:</label>
+             <button id="btn-autofit" class="small-btn" style="width: auto;">Ricalcola Dimensione</button>
+        </div>
+    </div>
+
+    <div class="pannello-immagine" id="panel-media">
+      <div class="panel-header" id="header-media">
+          <h3>Sfondo (Riferimento)</h3>
+          <button id="detach-media" class="small-btn" title="Sgancia pannello">✥ Sgancia</button>
+      </div>
+      
+      <div class="gallery-nav" id="gallery-controls" style="display:none;">
+          <button id="btn-prev-media" class="gallery-btn" title="Precedente">◀</button>
+          <span id="gallery-counter" class="gallery-counter">0/0</span>
+          <button id="btn-next-media" class="gallery-btn" title="Successivo">▶</button>
+          <button id="btn-delete-media" class="gallery-btn danger" style="margin-left:auto; color:red;" title="Rimuovi corrente">🗑️</button>
+      </div>
+
+      <div class="media-input-group">
+          <input type="text" id="external-url-input" placeholder="Incolla URL (Img/Video) e premi Vai">
+          <button id="load-url-btn" class="small-btn">Vai</button>
+      </div>
+
+      <div class="media-controls-row">
+           <button id="open-external-btn" class="small-btn" style="display:none;" title="Apri in nuova scheda">🔗 Apri Esterno</button>
+           <button id="btn-add-media" class="small-btn" title="Aggiungi un'altra immagine alla galleria" style="margin-left:auto; margin-right:5px; display:none;">➕ Aggiungi</button>
+           <button id="toggle-expand-btn" class="small-btn" title="Ingrandisci / Pop-up" style="margin-left:auto;">🔲 Finestra</button>
+      </div>
+
+      <div id="media-wrapper">
+        <div id="media-drag-handle" class="drag-handle-bar">
+            <span>✥ Sposta Media</span>
+            <div class="zoom-controls">
+                <button id="btn-media-zoom-out" class="zoom-btn" title="Zoom Indietro">-</button>
+                <button id="btn-media-zoom-in" class="zoom-btn" title="Zoom Avanti">+</button>
+            </div>
+            <button id="close-media-expanded-btn" class="close-expanded-btn">❌ Chiudi</button>
+        </div>
+
+        <div class="upload-placeholder" style="text-align:center; padding:10px;">
+          <p style="margin:0; font-size:0.8em; color:#94a3b8;">Trascina file o incolla URL sopra</p>
+          <button id="upload-image-btn" class="upload-btn">📂 Carica File Locale</button>
+        </div>
+        
+        <img id="uploaded-image" class="media-content" src="" alt="Sfondo" aria-hidden="true">
+        <video id="video-element" class="media-content" controls="controls" crossorigin="anonymous" playsinline=""></video>
+        <iframe id="iframe-element" class="media-content" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+      </div>
+      <input type="file" id="image-file-input" accept="image/*,video/mp4,video/webm" style="display:none" multiple="">
+    </div>
+
+    <div class="pannello-dati" id="panel-data">
+      <div class="panel-header" id="header-data">
+          <h3>Intestazione</h3>
+          <button id="detach-data" class="small-btn" title="Sgancia pannello">✥ Sgancia</button>
+      </div>
+      <div class="student-data">
+        <div class="student-field"><label>Titolo</label><input id="titolo" type="text" placeholder="Es. Proiezione Ortogonale"></div>
+        <div class="student-field"><label>Cognome</label><input id="cognome" type="text"></div>
+        <div class="student-field"><label>Nome</label><input id="nome" type="text"></div>
+        <div class="student-field"><label>Classe</label><input id="classe" type="text"></div>
+        <div class="student-field"><label>Data</label><input id="data" type="text" value="12/10/2026"></div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div id="arc-options-popup" class="arc-popup">
+    <label class="prop-toggle" style="margin:0; cursor:pointer;">
+        <input id="toggle-counterclockwise" type="checkbox" style="accent-color:var(--accent); width:16px; height:16px;"> Senso Antiorario
+    </label>
+</div>
+
+<div id="context-menu" class="context-menu" style="display: none;">
+    <div class="context-menu-item" id="ctx-insert-point" style="display:none;">
+        <span>⚫</span> Inserisci Punto Qui (Cmd+P)
+    </div>
+    <div class="context-menu-divider" id="ctx-div-main" style="display:none;"></div>
+    <div class="context-menu-item" id="ctx-front" style="display:none;">
+        <span>🔝</span> Porta in Primo Piano
+    </div>
+    <div class="context-menu-item" id="ctx-back" style="display:none;">
+        <span>⬇️</span> Manda in Secondo Piano
+    </div>
+    <div class="context-menu-divider" id="ctx-div-text" style="display:none;"></div>
+    <div class="context-menu-item" id="ctx-bold" style="display:none;">
+        <span><b>B</b></span> Attiva/Disattiva Grassetto
+    </div>
+    <div class="context-menu-divider" id="ctx-div-delete" style="display:none;"></div>
+    <div class="context-menu-item danger" id="ctx-delete" style="display:none;">
+        <span>🗑️</span> Elimina
+    </div>
+</div>
+
+<div id="dynamic-measure-tooltip" class="dynamic-tooltip" style="display:none;">
+    <span id="measure-label"></span>
+    <input type="number" id="measure-input" step="any" autocomplete="off" title="Digita un numero e premi Invio">
+    <span id="measure-unit"></span>
+</div>
+
+<div id="text-prompt-modal" class="custom-modal" style="display:none;">
+    <div class="modal-content">
+        <h4 style="margin-top:0; margin-bottom:10px; color:#334155;">Inserisci Etichetta</h4>
+        <input type="text" id="modal-text-input" style="width:100%; margin-bottom:10px; padding:8px; border:1px solid var(--cell-border); border-radius:6px; font-family:inherit; font-size:1em; outline:none;" autocomplete="off">
+        
+        <div class="symbol-keyboard">
+            <div class="sym-row"><strong>Greco:</strong> 
+                <button type="button" class="sym-btn">α</button><button type="button" class="sym-btn">β</button><button type="button" class="sym-btn">γ</button><button type="button" class="sym-btn">δ</button><button type="button" class="sym-btn">ε</button><button type="button" class="sym-btn">θ</button><button type="button" class="sym-btn">π</button>
+            </div>
+            <div class="sym-row"><strong>Geom:</strong> 
+                <button type="button" class="sym-btn">°</button><button type="button" class="sym-btn">∠</button><button type="button" class="sym-btn">△</button><button type="button" class="sym-btn">⊥</button><button type="button" class="sym-btn">∥</button><button type="button" class="sym-btn">≅</button>
+                <button type="button" class="sym-btn" data-char="̅" title="Segmento (sopra il carattere precedente)"> ̅ </button>
+                <button type="button" class="sym-btn" data-char="̑" title="Arco (sopra il carattere precedente)"> ̑ </button>
+            </div>
+            <div class="sym-row"><strong>Apici:</strong> 
+                <button type="button" class="sym-btn">⁰</button><button type="button" class="sym-btn">¹</button><button type="button" class="sym-btn">²</button><button type="button" class="sym-btn">³</button><button type="button" class="sym-btn">⁺</button><button type="button" class="sym-btn">⁻</button><button type="button" class="sym-btn">ⁿ</button><button type="button" class="sym-btn">'</button><button type="button" class="sym-btn">"</button>
+            </div>
+            <div class="sym-row"><strong>Pedici:</strong> 
+                <button type="button" class="sym-btn">₀</button><button type="button" class="sym-btn">₁</button><button type="button" class="sym-btn">₂</button><button type="button" class="sym-btn">₃</button><button type="button" class="sym-btn">₄</button><button type="button" class="sym-btn">₊</button><button type="button" class="sym-btn">₋</button><button type="button" class="sym-btn">ₐ</button><button type="button" class="sym-btn">ₓ</button>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.9em; font-weight:600; color:#475569;">
+                <input type="checkbox" id="modal-bold-checkbox" checked="checked" style="accent-color:var(--accent); width:16px; height:16px;">
+                Testo in Grassetto (B)
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:0.9em; font-weight:600; color:#475569;" title="Posiziona l'etichetta a sinistra del punto">
+                <input type="checkbox" id="modal-side-left-checkbox" style="accent-color:var(--accent); width:16px; height:16px;">
+                S
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:0.9em; font-weight:600; color:#475569;" title="Posiziona l'etichetta a destra del punto">
+                <input type="checkbox" id="modal-side-right-checkbox" checked="checked" style="accent-color:var(--accent); width:16px; height:16px;">
+                D
+            </label>
+        </div>
+        <label style="display:flex; align-items:center; gap:6px; margin-bottom:15px; cursor:pointer; font-size:0.9em; font-weight:600; color:#475569;">
+            <input type="checkbox" id="modal-point-checkbox" style="accent-color:var(--accent); width:16px; height:16px;">
+            Inserisci anche un punto sulla griglia
+        </label>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button id="modal-btn-cancel" class="small-btn">Annulla</button>
+            <button id="modal-btn-ok" class="small-btn" style="background:var(--accent); color:white; border:none; padding:6px 12px;">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="point-type-modal" class="custom-modal" style="display:none;">
+    <div class="modal-content">
+        <h4 style="margin-top:0; margin-bottom:10px; color:#334155;">Etichetta Punto</h4>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; font-size:0.9em; color:#334155;">
+            <label style="cursor:pointer;"><input type="radio" name="point-label-type" value="uppercase" checked="checked"> Lettera Maiuscola (A, B, C...)</label>
+            <label style="cursor:pointer;"><input type="radio" name="point-label-type" value="lowercase"> Lettera Minuscola (a, b, c...)</label>
+            <label style="cursor:pointer;"><input type="radio" name="point-label-type" value="number"> Numero (1, 2, 3...)</label>
+            <label style="cursor:pointer;"><input type="radio" name="point-label-type" value="none"> Solo punto (nessuna etichetta)</label>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button id="modal-point-btn-reset" class="small-btn danger" style="padding:4px 8px; font-size:0.8em;" title="Azzera i contatori (A, a, 1)">🔄 Reset</button>
+            <div style="display:flex; gap:8px;">
+                <button id="modal-point-btn-cancel" class="small-btn">Annulla</button>
+                <button id="modal-point-btn-ok" class="small-btn" style="background:var(--accent); color:white; border:none; padding:6px 12px;">Inserisci</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="autosave-modal" class="custom-modal" style="display:none;">
+    <div class="modal-content">
+        <h4 style="margin-top:0; margin-bottom:10px; color:#334155;">Salvataggio Automatico Trovato</h4>
+        <p>È stato trovato un lavoro non salvato in precedenza. Vuoi ripristinarlo?</p>
+        <div class="btn-row">
+            <button id="btn-discard-autosave" class="small-btn danger">Ignora e Inizia Nuovo</button>
+            <button id="btn-load-autosave" class="small-btn" style="background:var(--accent); color:white; border:none;">Ripristina Lavoro</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+  <p>SimpleGrid - Caridi Nicola ©</p>
+</footer>
+
+<script src="GridArt%20Pro%20-%20Advanced%20CAD_files/html2canvas.min.js"></script>
+<script src="GridArt%20Pro%20-%20Advanced%20CAD_files/jspdf.umd.min.js"></script>
+
+<script src="GridArt%20Pro%20-%20Advanced%20CAD_files/script.js"></script>
+
+
+<script async="" src="GridArt%20Pro%20-%20Advanced%20CAD_files/hud" data-nf-variant="public" data-netlify-site-id="4fa6fad2-f759-4089-a67f-bb59bf02fa31" data-app-host="app.netlify.com"></script>
+<iframe id="nl-badge-frame" title="Powered by Netlify" style="position: fixed; bottom: 0px; right: 0px; border: 0px; margin: 0px; padding: 0px; background: transparent; color-scheme: dark; z-index: 2147483645; width: 197px; height: 64px; clip-path: path(&quot;M 3 3 H 184 V 51 H 3 Z&quot;);" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;color-scheme&quot; content=&quot;dark&quot;&gt;&lt;style&gt;
+    :root{--nl-vw:1400px;--nl-vh:700px}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+    body{display:flex;align-items:flex-end;justify-content:flex-end;height:100vh;
+      padding:8px 18px 18px 8px;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#f4f9f9;-webkit-font-smoothing:antialiased}
+    .nl-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:max-content;max-width:calc(var(--nl-vw,100vw) - 26px)}
+    button{font-family:inherit;cursor:pointer}
+    :focus-visible{outline:2px solid #32e6e2;outline-offset:2px;border-radius:6px}
+    .nl-icon-btn{position:relative;flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid transparent;background:transparent;color:#d5e3e6;transition:background .15s ease,color .15s ease}
+    .nl-icon-btn:hover{background:rgba(255,255,255,0.08);color:#f4f9f9}
+    .nl-tap::after{content:&quot;&quot;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:max(100%,44px);height:max(100%,44px)}
+    @keyframes nl-rise{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+  
+      .nl-card{position:relative;display:none;width:min(340px,calc(var(--nl-vw,100vw) - 26px));max-height:calc(var(--nl-vh,100vh) - 84px);overflow-y:auto;background:linear-gradient(180deg,#132832 0%,#0e1e25 100%);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:18px;transform-origin:bottom right;animation:nl-rise .3s cubic-bezier(.34,1.4,.4,1) both}
+      .nl-card.open{display:block}
+      .nl-card-close{position:absolute;top:10px;right:10px}
+      .nl-card h2{margin:0;padding-right:30px;font-size:16px;font-weight:750;letter-spacing:-0.015em;line-height:1.35}
+      .nl-card h2 em{font-style:normal;background:linear-gradient(90deg,#32e6e2,#4d7cfe,#9a6bff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+      .nl-card p{margin:8px 0 0;font-size:12.5px;color:#d5e3e6}
+      .nl-prompt{position:relative;margin-top:14px;background:#10222b;border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:10px 12px;transition:border-color .15s ease,box-shadow .15s ease}
+      .nl-prompt:focus-within{border-color:#05bdba;box-shadow:0 0 0 3px rgba(5,189,186,0.18)}
+      .nl-prompt textarea{display:block;width:100%;height:38px;resize:none;border:0;outline:none;background:transparent;color:#f4f9f9;font:inherit;font-size:13px;line-height:19px;padding:0 28px 0 0}
+      .nl-prompt textarea::placeholder{color:#a9bdc2}
+      .nl-send{position:absolute;right:9px;bottom:9px;width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#05bdba;color:#02191b;transition:background .15s ease}
+      .nl-send:hover{background:#32e6e2}
+      @media (pointer: coarse){
+        .nl-prompt textarea{font-size:16px;line-height:21px;height:42px}
+      }
+      .nl-or{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#a9bdc2}
+      .nl-or::before,.nl-or::after{content:&quot;&quot;;flex:1;height:1px;background:rgba(255,255,255,0.09)}
+      .nl-drop{display:flex;align-items:center;justify-content:space-between;gap:6px;text-decoration:none;background:#1b3a45;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;color:#cfe0e3;transition:background .15s ease,color .15s ease,border-color .15s ease}
+      .nl-drop:hover{background:#224753;color:#f4f9f9;border-color:rgba(50,230,226,0.3)}
+      .nl-drop .nl-arrow{transition:transform .18s cubic-bezier(.34,1.4,.4,1)}
+      .nl-drop:hover .nl-arrow{transform:translateX(3px)}
+      .nl-badge{display:flex;align-items:center;gap:9px;white-space:nowrap;border:1px solid rgba(255,255,255,0.09);background:linear-gradient(180deg,#142b34,#0e1e25);color:#f4f9f9;border-radius:999px;padding:9px 14px 9px 11px;font-size:13px;font-weight:600;letter-spacing:0.01em;transition:border-color .2s ease}
+      .nl-badge:hover{border-color:rgba(50,230,226,0.26)}
+      .nl-hide{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:#a9bdc2;font-size:11.5px;font-weight:600;padding:4px;border-radius:8px;transition:color .15s ease}
+      .nl-hide:hover{color:#d5e3e6;text-decoration:underline}
+      .nl-badge-label{color:#d5e3e6;font-weight:500}
+      .nl-badge-brand{font-weight:750}
+    &lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+      &lt;div class=&quot;nl-wrap&quot;&gt;
+        &lt;section class=&quot;nl-card&quot; id=&quot;nl-card&quot; aria-label=&quot;Build your own site on Netlify&quot;&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-icon-btn nl-tap nl-card-close&quot; id=&quot;nl-card-close&quot; aria-label=&quot;Close&quot;&gt;&lt;svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.9&quot; stroke-linecap=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+          &lt;h2&gt;&lt;em&gt;Build your own site with Netlify&lt;/em&gt;&lt;/h2&gt;
+          &lt;p&gt;Describe what you want, and an AI agent designs, builds and deploys it in minutes.&lt;/p&gt;
+          &lt;form class=&quot;nl-prompt&quot; action=&quot;https://app.netlify.com/start&quot; method=&quot;get&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;textarea name=&quot;prompt&quot; rows=&quot;2&quot; required maxlength=&quot;300&quot; autocomplete=&quot;off&quot;
+                      enterkeyhint=&quot;go&quot;
+                      placeholder=&quot;A shop for my handmade surfboards&amp;hellip;&quot;
+                      aria-label=&quot;Describe the site you want to build&quot;&gt;&lt;/textarea&gt;
+            &lt;button type=&quot;submit&quot; class=&quot;nl-send nl-tap&quot; aria-label=&quot;Build this site&quot;&gt;&lt;svg width=&quot;13&quot; height=&quot;13&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 12.75v-9.5M3.9 7.35 8 3.25l4.1 4.1&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_source&quot; value=&quot;netlify_badge&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_campaign&quot; value=&quot;loops&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_medium&quot; value=&quot;owned&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_content&quot; value=&quot;prompt&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_id&quot; value=&quot;4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot;&gt;
+            
+          &lt;/form&gt;
+          &lt;div class=&quot;nl-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/div&gt;
+          &lt;a class=&quot;nl-drop&quot; href=&quot;https://app.netlify.com/drop?utm_source=netlify_badge&amp;utm_campaign=loops&amp;utm_medium=owned&amp;utm_content=drop&amp;utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;span&gt;Drop a site you already have&lt;/span&gt;&lt;span class=&quot;nl-arrow&quot; aria-hidden=&quot;true&quot;&gt;&amp;rarr;&lt;/span&gt;
+          &lt;/a&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-hide&quot; id=&quot;nl-hide&quot;&gt;Hide this badge&lt;/button&gt;
+        &lt;/section&gt;
+        &lt;button type=&quot;button&quot; class=&quot;nl-badge&quot; id=&quot;nl-badge&quot; aria-expanded=&quot;false&quot; aria-controls=&quot;nl-card&quot;
+                aria-label=&quot;Powered by Netlify — build your own site&quot;&gt;
+          &lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 32 32&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;path fill=&quot;#fff&quot; d=&quot;M17.9922 18.3225H14.005L13.6746 17.9921V14.005L14.005 13.6746H17.9922L18.3226 14.005V17.9921L17.9922 18.3225Z&quot;/&gt;
+    &lt;g fill=&quot;#05BDBA&quot;&gt;
+      &lt;path d=&quot;M9.6958 24.3311H9.35705L7.6661 22.6401V22.3041L10.2511 19.7164L12.042 19.7191L12.2808 19.9552V21.7461L9.6958 24.3311Z&quot;/&gt;
+      &lt;path d=&quot;M7.6661 9.69576V9.35701L9.35705 7.66606H9.6958L12.2808 10.2511V12.0392L12.042 12.2808H10.2511L7.6661 9.69576Z&quot;/&gt;
+      &lt;path d=&quot;M10.0457 17.4369H0.205466L0 17.2314V14.7658L0.205466 14.5603H10.0457L10.2511 14.7658V17.2314L10.0457 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M31.7945 17.4369H21.9544L21.7489 17.2314V14.7658L21.9544 14.5603H31.7945L32 14.7658V17.2314L31.7945 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 10.0456V2.66547L14.7686 2.46001H17.2343L17.4396 2.66547V10.0456L17.2343 10.2511H14.7686L14.5631 10.0456Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 29.3316V21.9515L14.7686 21.746H17.2343L17.4396 21.9515V29.3316L17.2343 29.5371H14.7686L14.5631 29.3316Z&quot;/&gt;
+    &lt;/g&gt;&lt;/svg&gt;
+          &lt;span&gt;&lt;span class=&quot;nl-badge-label&quot;&gt;Powered by&lt;/span&gt; &lt;span class=&quot;nl-badge-brand&quot;&gt;Netlify&lt;/span&gt;&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;script&gt;
+        
+    function nlSend(){
+      var wrap=document.querySelector('.nl-wrap'),boxes=[];
+      for(var i=0;i&lt;wrap.children.length;i++){
+        var c=wrap.children[i];
+        if(!c.offsetWidth||!c.offsetHeight)continue;
+        boxes.push({x:c.offsetLeft-wrap.offsetLeft+8,
+                    y:c.offsetTop-wrap.offsetTop+8,
+                    w:c.offsetWidth,h:c.offsetHeight});
+      }
+      parent.postMessage({nlHud:'resize',
+        width:wrap.offsetWidth+26,
+        height:wrap.offsetHeight+26,
+        boxes:boxes},'*');
+    }
+    function nlSendSoon(){requestAnimationFrame(nlSend);}
+    window.addEventListener('load',nlSend);
+    window.addEventListener('message',function(e){
+      if(e.source!==parent||!e.data||e.data.nlHud!=='viewport')return;
+      var s=document.documentElement.style;
+      s.setProperty('--nl-vw',e.data.w+'px');
+      s.setProperty('--nl-vh',e.data.h+'px');
+      document.documentElement.classList.toggle('nl-narrow',e.data.w&lt;600);
+      nlSendSoon();
+    });
+    var nlCoarse=window.matchMedia('(pointer: coarse)').matches;
+    function nlSubmit(form){
+      if(form.requestSubmit)return form.requestSubmit();
+      if(form.checkValidity&amp;&amp;!form.checkValidity())
+        return form.reportValidity&amp;&amp;form.reportValidity();
+      form.submit();
+    }
+  
+        var badge=document.getElementById('nl-badge'),card=document.getElementById('nl-card'),
+            box=card.querySelector('textarea');
+        function setOpen(open){
+          card.classList.toggle('open',open);
+          badge.setAttribute('aria-expanded',open?'true':'false');
+          nlSendSoon();
+          if(open&amp;&amp;!nlCoarse)box.focus();
+        }
+        box.addEventListener('keydown',function(e){
+          if(e.key==='Enter'&amp;&amp;!e.shiftKey){e.preventDefault();nlSubmit(box.form);}
+        });
+        badge.addEventListener('click',function(){setOpen(!card.classList.contains('open'));});
+        document.getElementById('nl-card-close').addEventListener('click',function(){setOpen(false);badge.focus();});
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&amp;&amp;card.classList.contains('open')){setOpen(false);badge.focus();}
+        });
+        document.getElementById('nl-hide').addEventListener('click',function(){
+          parent.postMessage({nlHud:'state',value:'hidden'},'*');
+        });
+      &lt;/script&gt;
+    &lt;/body&gt;&lt;/html&gt;" data-nl-ready="1"></iframe></body></html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Geometria 3D - Didattica 2.0</title>
+    <script src="Laboratorio%20Geometria%203D%20-%20Didattica%202.0_files/three.min.js"></script>
+    <script src="Laboratorio%20Geometria%203D%20-%20Didattica%202.0_files/OrbitControls.min.js"></script>
+    <script src="Laboratorio%20Geometria%203D%20-%20Didattica%202.0_files/jspdf.umd.min.js"></script>
+    <link href="Laboratorio%20Geometria%203D%20-%20Didattica%202.0_files/css2.css" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #eef1f5; color: #2c3e50; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        header { padding: 15px; background: linear-gradient(90deg, #3498db, #2c7ac0); color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; position: relative; flex-shrink: 0; }
+        .btn-home { background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.4); transition: 0.3s; display: flex; align-items: center; gap: 5px; }
+        .btn-home:hover { background: rgba(255, 255, 255, 0.9); color: #2c7ac0; }
+
+        .container { display: flex; flex: 1; padding: 15px; gap: 15px; overflow: hidden; position: relative; width: 100%; max-width: 1600px; margin: 0 auto; }
+        .canvas-section { flex: 2; display: flex; flex-direction: column; min-width: 0; }
+        #canvas-container { flex: 1; background: #fff; border-radius: 12px; border: 2px solid #ddd; position: relative; min-height: 400px; }
+
+        .controls-section { flex: 1; min-width: 350px; max-width: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px; }
+        .panel { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h3 { color: #2980b9; font-size: 1rem; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; align-items: center; }
+        .tool-group { display: flex; align-items: center; gap: 12px; border-right: 1px solid #eee; padding-right: 15px; flex-wrap: wrap; }
+        .toolbar button { padding: 6px 10px; font-size: 0.75rem; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .toolbar button:hover { background: #2c3e50; }
+        
+        .toggle-elem-1 { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer; color: #2980b9; }
+
+        .step { background: #fdfdfd; border: 1px solid #edf2f7; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .input-group { margin-bottom: 10px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 3px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Poppins', sans-serif; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Poppins', sans-serif; resize: vertical; font-size: 0.85rem; }
+        
+        .radio-group { display: flex; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; flex-wrap: wrap; }
+        .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: normal; }
+
+        .mode-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .mode-tabs button { flex: 1; padding: 8px; background: #bdc3c7; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+        .mode-tabs button.active { background: #3498db; color: white; }
+
+        .btn-action { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; color: white; text-transform: uppercase; transition: 0.2s; }
+        .btn-base { background: #3498db; }
+        .btn-solid { background: #e67e22; }
+        .btn-green { background: #27ae60; }
+        .btn-action:hover { filter: brightness(1.1); }
+
+        .edu-tools { background: #e8f4f8; border: 1px solid #bce0fd; position: relative; }
+        .help-icon { background: #3498db; color: white; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; margin-left: 8px; font-weight: bold; transition: 0.2s; }
+        .help-icon:hover { background: #2980b9; transform: scale(1.1); }
+
+        #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; width: 95%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        
+        .table-fixed { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.85rem; }
+        .table-fixed th, .table-fixed td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .table-fixed th { background: #f2f6f8; color: #2980b9; }
+        
+        .stats { font-size: 0.85rem; margin-top: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .stat-row { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1; line-height: 1.4; }
+        .stat-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .stat-row strong { color: #2980b9; display: inline-block; width: 110px; }
+        .stat-row span { font-family: 'Fira Code', monospace; color: #2c3e50; }
+        .stat-row span strong { color: #e67e22; width: auto; }
+        .hidden-val { background: #bdc3c7; color: #bdc3c7; border-radius: 4px; padding: 0 8px; cursor: pointer; user-select: none; transition: 0.2s; }
+        .hidden-val:hover { background: #95a5a6; }
+
+        .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 0.85rem; }
+        .pdf-grid label { font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        @media (max-width: 950px) { 
+            body { height: auto; overflow-y: auto; display: block; }
+            header { flex-direction: column; text-align: center; gap: 10px; }
+            .container { flex-direction: column; overflow: visible; height: auto; padding: 10px; }
+            .canvas-section { flex: none; width: 100%; height: 50vh; min-height: 350px; }
+            #canvas-container { min-height: unset; height: 100%; }
+            .controls-section { flex: none; width: 100%; min-width: 100%; max-width: 100%; overflow-y: visible; padding-right: 0; }
+            .toolbar { justify-content: center; padding: 8px; }
+            .tool-group { border-right: none; padding-right: 0; justify-content: center; border-bottom: 1px solid #eee; padding-bottom: 8px; width: 100%; }
+            .tool-group:last-child { border-bottom: none; padding-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display:flex; gap: 15px; align-items: center; justify-content: center;">
+            <a class="btn-home" href="https://cheery-khapse-9b6aa8.netlify.app/"><span>⌂</span> Home</a>
+            <h2>Laboratorio 3D: Geometria Solida</h2>
+        </div>
+    </header>
+
+    <div id="modal-overlay" onclick="closeModals()"></div>
+    <div id="help-modal" class="modal">
+        <h3 style="margin-bottom:10px; color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:10px;">Guida ai Calcoli Geometrici</h3>
+        <p style="font-size:0.9rem; margin-bottom:10px; color:#34495e;">Nella scuola media, per calcolare l'apotema e l'area dei poligoni regolari si utilizzano i <b>Numeri Fissi (f)</b>.</p>
+        <table class="table-fixed">
+            <thead><tr><th>Poligono</th><th>Lati (n)</th><th>Numero Fisso (f)</th></tr></thead>
+            <tbody>
+                <tr><td>Triangolo Equil.</td><td>3</td><td>0.289</td></tr>
+                <tr><td>Quadrato</td><td>4</td><td>0.500</td></tr>
+                <tr><td>Pentagono Reg.</td><td>5</td><td>0.688</td></tr>
+                <tr><td>Esagono Reg.</td><td>6</td><td>0.866</td></tr>
+                <tr><td>Ettagono Reg.</td><td>7</td><td>1.038</td></tr>
+                <tr><td>Ottagono Reg.</td><td>8</td><td>1.207</td></tr>
+                <tr><td>Ennagono Reg.</td><td>9</td><td>1.374</td></tr>
+                <tr><td>Decagono Reg.</td><td>10</td><td>1.539</td></tr>
+                <tr><td>Dodecagono Reg.</td><td>12</td><td>1.866</td></tr>
+            </tbody>
+        </table>
+        <div style="margin-top:15px; font-size:0.85rem; background:#fdf9e1; padding:15px; border-radius:8px; border-left:4px solid #f1c40f;">
+            <b style="color:#e67e22;">Formule Pratiche:</b><br><br>
+            • <b>Apotema Base:</b> Lato × Numero Fisso<br>
+            • <b>Area Base:</b> (Perimetro × Apotema) / 2<br>
+            • <b>Apotema Piramide:</b> √(Altezza² + Apotema_Base²)
+        </div>
+        <button class="btn-action btn-base" style="margin-top:20px;" onclick="closeModals()">Ho capito</button>
+    </div>
+
+    <div id="pdf-modal" class="modal">
+        <h3 style="margin-bottom:10px; color:#2c3e50; border-bottom:2px solid #27ae60; padding-bottom:10px;">Genera Scheda di Verifica</h3>
+        
+        <label style="cursor:pointer; display:flex; align-items:center; gap:5px; color:#2980b9; font-weight:bold; margin-bottom:15px;">
+            <input type="checkbox" id="pdf-chk-alunno" checked="checked"> Inserisci Campi Alunno (Nome, Classe, Data)
+        </label>
+
+        <label>Titolo della Scheda:</label>
+        <input type="text" id="pdf-title" value="Esercizio di Geometria Solida" style="margin-bottom:15px;">
+        
+        <label><b>Testo del Problema:</b></label>
+        <textarea id="pdf-testo" rows="3" placeholder="Scrivi qui la traccia dell'esercizio per i tuoi studenti... (Es. Disegna le proiezioni mancanti e calcola il volume)"></textarea>
+
+        <label style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;"><b>1. Viste da mostrare (Disegno Tecnico):</b><br><span style="font-size:0.75rem; font-weight:normal; color:#7f8c8d;">Togli la spunta alle viste che lo studente dovrà disegnare da solo.</span></label>
+        <div class="pdf-grid" style="background:#f8f9fa; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+            <label><input type="checkbox" id="pdf-view-pv" checked="checked"> P.V. (Fronte)</label>
+            <label><input type="checkbox" id="pdf-view-po" checked="checked"> P.O. (Pianta)</label>
+            <label><input type="checkbox" id="pdf-view-pl" checked="checked"> P.L. (Fianco)</label>
+            <label><input type="checkbox" id="pdf-view-3d" checked="checked"> 3D (Assonometria)</label>
+        </div>
+
+        <label style="margin-top:15px;"><b>2. Dati Tecnici da fornire:</b><br><span style="font-size:0.75rem; font-weight:normal; color:#7f8c8d;">Togli la spunta ai dati che gli studenti dovranno calcolare.</span></label>
+        <div class="pdf-grid" style="background:#f8f9fa; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+            <label><input type="checkbox" id="pdf-chk-misure" checked="checked"> Misure Base (Lato/r)</label>
+            <label><input type="checkbox" id="pdf-chk-h" checked="checked"> Altezza (h)</label>
+            <label><input type="checkbox" id="pdf-chk-p" checked="checked"> Perimetro/Circonfer.</label>
+            <label><input type="checkbox" id="pdf-chk-apo" checked="checked"> Apotema (a)</label>
+            <label><input type="checkbox" id="pdf-chk-ab"> Area di Base (Ab)</label>
+            <label><input type="checkbox" id="pdf-chk-al"> Area Laterale (Al)</label>
+            <label><input type="checkbox" id="pdf-chk-at"> Area Totale (At)</label>
+            <label><input type="checkbox" id="pdf-chk-v"> Volume (V)</label>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-action" style="background:#95a5a6;" onclick="closeModals()">Annulla</button>
+            <button class="btn-action btn-green" onclick="processPDF()">Genera PDF Ora</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="canvas-section">
+            <div class="toolbar">
+                <div class="tool-group">
+                    <button onclick="rotateObject('x', 90)">Rot. X</button>
+                    <button onclick="rotateObject('y', 90)">Rot. Y</button>
+                    <button onclick="rotateObject('z', 90)">Rot. Z</button>
+                </div>
+                <div class="tool-group">
+                    <button onclick="setView('top')">PO</button>
+                    <button onclick="setView('front')">PV</button>
+                    <button onclick="setView('side')">PL</button>
+                    <button onclick="setView('iso')">3D</button>
+                    <button onclick="location.reload()" style="background:#c0392b; color:white; border:none; margin-left:5px;">Reset</button>
+                </div>
+                <div class="tool-group" style="border-right: none;">
+                    <label class="toggle-elem-1" title="Visualizza Apotema">
+                        <input type="checkbox" id="show-h-apo" onchange="toggleElements()" checked="checked"> Apotema
+                    </label>
+                    <label class="toggle-elem-1 toggle-grid" title="Mostra/Nascondi Griglia e Assi">
+                        <input type="checkbox" id="show-grid" onchange="toggleGrid()" checked="checked"> Griglia/Assi
+                    </label>
+                </div>
+                <div style="flex: 1; min-width: 100%; display: flex; justify-content: center; gap: 5px; padding-top: 5px;">
+                    <button onclick="downloadImage()" style="background:#f39c12; color:white; border:none; border-radius:4px; padding:6px 10px; font-weight:bold;">📸 Salva Immagine</button>
+                    <button onclick="openPDFModal()" style="background:#27ae60; color:white; border:none; border-radius:4px; padding:6px 10px; font-weight:bold;">Scarica PDF Scheda</button>
+                </div>
+            </div>
+            <div id="canvas-container"><canvas style="display: block; width: 902px; height: 500px;" width="902" height="500"></canvas></div>
+        </section>
+
+        <section class="controls-section">
+            <div class="panel">
+                <div class="mode-tabs">
+                    <button id="tab-poly" class="active" onclick="switchMode('poly')">Prismi/Piramidi</button>
+                    <button id="tab-circ" onclick="switchMode('circ')" class="">Cilindro/Cono</button>
+                    <button id="tab-rot" onclick="switchMode('rot')" class="">Rotazione 360°</button>
+                </div>
+
+                <div id="standard-ui" style="display: block;">
+                    <div class="step">
+                        <h3>1. Definizione Base 2D</h3>
+                        <div id="poly-settings" style="display: block;">
+                            <label>Numero Lati (n):</label>
+                            <input type="number" id="sides" value="6" min="3" max="12" oninput="if(currentType==='base') createBase2D(); else if(currentType==='prism') createSolid('prism'); else createSolid('pyramid');">
+                            
+                            <label>Modalità Misura:</label>
+                            <select id="poly-input-type" onchange="updatePolyInputLabel()">
+                                <option value="l" selected="selected">Lato Poligono (l)</option>
+                                <option value="r">Raggio Circoscritto (r)</option>
+                            </select>
+                            
+                            <label id="lbl-poly-val">Misura Lato (l) cm:</label>
+                            <input type="number" id="poly-val" value="4" step="0.5" oninput="if(currentType==='base') createBase2D(); else if(currentType==='prism') createSolid('prism'); else createSolid('pyramid');">
+                        </div>
+                        <div id="circ-settings" style="display:none">
+                            <label>Raggio Cerchio (r) cm:</label>
+                            <input type="number" id="radius-circ" value="4" step="0.5" oninput="if(currentType==='base') createBase2D(); else if(currentType==='cylinder') createSolid('cylinder'); else createSolid('cone');">
+                        </div>
+                        <button class="btn-action btn-base" style="margin-top:10px" onclick="createBase2D()">Disegna Base 2D</button>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>2. Generazione Solido 3D</h3>
+                        <label>Altezza (h) cm:</label>
+                        <input type="number" id="height" value="6" step="0.5" oninput="if(currentType==='prism'||currentType==='cylinder') createSolid(currentType); else if(currentType==='pyramid'||currentType==='cone') createSolid(currentType);">
+                        
+                        <div id="poly-actions" style="display: block;">
+                            <button class="btn-action btn-solid" onclick="createSolid('prism')">Estrudi Prisma</button>
+                            <button class="btn-action btn-solid" style="margin-top:5px" onclick="createSolid('pyramid')">Estrudi Piramide</button>
+                        </div>
+                        <div id="circ-actions" style="display:none">
+                            <button class="btn-action btn-solid" onclick="createSolid('cylinder')">Estrudi Cilindro</button>
+                            <button class="btn-action btn-solid" style="margin-top:5px" onclick="createSolid('cone')">Estrudi Cono</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rot-ui" style="display:none">
+                    <div class="step">
+                        <h3>1. Profilo 2D Generatore</h3>
+                        <label>Figura Piana:</label>
+                        <select id="rot-figure" onchange="updateRotInputs()">
+                            <option value="rect" selected="selected">Rettangolo (Cilindro)</option>
+                            <option value="tri">Triangolo Rettangolo (Cono)</option>
+                            <option value="trap">Trapezio Rettangolo (Tronco)</option>
+                            <option value="trap_iso">Trapezio Isoscele (Tronco)</option>
+                            <option value="qcirc">Quarto di Cerchio (Semisfera)</option>
+                            <option value="scirc">Semicerchio (Sfera)</option>
+                        </select>
+                        
+                        <div style="margin-top:10px; display:flex; gap:10px;">
+                            <div style="flex:1">
+                                <label>Base/Raggio (r) cm:</label>
+                                <input type="number" id="rot-b1" value="4" step="0.5" oninput="if(currentType==='rot_profile') createRotationProfile(); else createRotationSolid();">
+                            </div>
+                            <div style="flex:1" id="group-h">
+                                <label>Altezza (h) cm:</label>
+                                <input type="number" id="rot-h" value="6" step="0.5" oninput="if(currentType==='rot_profile') createRotationProfile(); else createRotationSolid();">
+                            </div>
+                        </div>
+                        <div id="group-b2" style="display:none; margin-top:5px">
+                            <label>Base Minore (r2) cm:</label>
+                            <input type="number" id="rot-b2" value="2" step="0.5" oninput="if(currentType==='rot_profile') createRotationProfile(); else createRotationSolid();">
+                        </div>
+
+                        <label style="margin-top:10px;">Scegli Asse di Rotazione:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="rotAxis" value="y" checked="checked" onchange="createRotationProfile()"> Asse Verticale (Y)</label>
+                            <label><input type="radio" name="rotAxis" value="x" onchange="createRotationProfile()"> Asse Orizzontale (X)</label>
+                        </div>
+
+                        <button class="btn-action btn-base" onclick="createRotationProfile()">Disegna Profilo 2D</button>
+                    </div>
+
+                    <div class="step">
+                        <h3>2. Generazione Solido</h3>
+                        <div class="input-group">
+                            <label style="display:flex; justify-content:space-between;">
+                                Angolo: <span id="lbl-angle" style="color:#e67e22">360°</span>
+                            </label>
+                            <input type="range" id="rot-angle" min="10" max="360" value="360" oninput="updateAngleLabel()">
+                        </div>
+                        <button class="btn-action btn-solid" onclick="createRotationSolid()">Genera Solido 3D</button>
+                    </div>
+                </div>
+
+                <div class="step edu-tools">
+                    <h3 style="border:none; margin:0; font-size:1rem; display:flex; align-items:center;">
+                        Strumenti Didattici <span class="help-icon" onclick="openHelp()" title="Visualizza Guida Formule">?</span>
+                    </h3>
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:10px;">
+                        <input type="checkbox" id="use-pi-approx" onchange="updateStats()" checked="checked"> Usa π = 3.14 (Calcolo Semplificato)
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:5px;">
+                        <input type="checkbox" id="challenge-mode" onchange="updateStats()"> Modalità Sfida (Nascondi i calcoli)
+                    </label>
+                </div>
+
+                <div class="stats" id="stats-container"><div class="stat-row"><strong>Lato (l):</strong> <span>l = 4.00 = <strong>4.00 cm</strong></span></div><div class="stat-row"><strong>Perimetro (2p):</strong> <span>n · l = 6 · 4.00 = <strong>24.00 cm</strong></span></div><div class="stat-row"><strong>Num. Fisso (f):</strong> <span>Da Tabella = 0.866 = <strong>0.866 </strong></span></div><div class="stat-row"><strong>Apotema Base:</strong> <span>l · f = 4.00 · 0.866 = <strong>3.46 cm</strong></span></div><div class="stat-row"><strong>Area Base:</strong> <span>(2p · a) / 2 = (24.00 · 3.46) / 2 = <strong>41.57 cm²</strong></span></div></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Variabili Globali
+        let scene, camera, renderer, controls, solidGroup, geoGroupH, gridHelper, axesHelper;
+        let shapeMode = 'poly', currentType = 'base';
+        let calcData = {}; // Dati per esportazione PDF
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8fafd);
+            
+            const aspect = container.clientWidth / container.clientHeight;
+            camera = new THREE.OrthographicCamera(-15 * aspect, 15 * aspect, 15, -15, 0.1, 1000);
+            camera.position.set(20, 20, 20);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            solidGroup = new THREE.Group(); scene.add(solidGroup);
+            geoGroupH = new THREE.Group(); scene.add(geoGroupH);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(10, 20, 10); scene.add(sun);
+            
+            gridHelper = new THREE.GridHelper(30, 30, 0xbdc3c7, 0xecf0f1);
+            scene.add(gridHelper);
+            axesHelper = new THREE.AxesHelper(10);
+            scene.add(axesHelper);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            
+            window.addEventListener('resize', onWindowResize);
+            switchMode('poly'); 
+            animate();
+        }
+
+        function animate() { 
+            requestAnimationFrame(animate); 
+            controls.update(); 
+            if (solidGroup.children.length > 0) {
+                scene.updateMatrixWorld(true);
+                scene.traverse(function(child) {
+                    if (child.isLine && child.material && child.material.isLineDashedMaterial) {
+                        child.computeLineDistances();
+                    }
+                });
+            }
+            renderer.render(scene, camera); 
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            if(!container) return;
+            const aspect = container.clientWidth / container.clientHeight;
+            camera.left = -15 * aspect; camera.right = 15 * aspect;
+            camera.top = 15; camera.bottom = -15;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function openHelp() { document.getElementById('modal-overlay').style.display = 'block'; document.getElementById('help-modal').style.display = 'block'; }
+        function openPDFModal() { 
+            document.getElementById('modal-overlay').style.display = 'block'; 
+            document.getElementById('pdf-modal').style.display = 'block'; 
+            let nome = currentType.toUpperCase().replace('_', ' ');
+            document.getElementById('pdf-title').value = "Esercizio Geometria: " + nome;
+        }
+        function closeModals() { document.getElementById('modal-overlay').style.display = 'none'; document.getElementById('help-modal').style.display = 'none'; document.getElementById('pdf-modal').style.display = 'none'; }
+
+        function toggleGrid() { gridHelper.visible = document.getElementById('show-grid').checked; axesHelper.visible = document.getElementById('show-grid').checked; }
+
+        function updatePolyInputLabel() {
+            const type = document.getElementById('poly-input-type').value;
+            document.getElementById('lbl-poly-val').innerText = type === 'l' ? "Misura Lato (l) cm:" : "Raggio Circoscritto (r) cm:";
+            if(currentType === 'base') createBase2D(); else if(currentType === 'prism') createSolid('prism'); else if(currentType === 'pyramid') createSolid('pyramid');
+        }
+
+        function switchMode(m) {
+            shapeMode = m;
+            document.getElementById('tab-poly').className = (m === 'poly' ? 'active' : '');
+            document.getElementById('tab-circ').className = (m === 'circ' ? 'active' : '');
+            document.getElementById('tab-rot').className = (m === 'rot' ? 'active' : '');
+            document.getElementById('standard-ui').style.display = (m === 'rot' ? 'none' : 'block');
+            document.getElementById('rot-ui').style.display = (m === 'rot' ? 'block' : 'none');
+            document.getElementById('poly-settings').style.display = (m === 'poly' ? 'block' : 'none');
+            document.getElementById('circ-settings').style.display = (m === 'circ' ? 'block' : 'none');
+            document.getElementById('poly-actions').style.display = (m === 'poly' ? 'block' : 'none');
+            document.getElementById('circ-actions').style.display = (m === 'circ' ? 'block' : 'none');
+            if(m === 'rot') createRotationProfile(); else createBase2D();
+        }
+
+        function updateRotInputs() {
+            const fig = document.getElementById('rot-figure').value;
+            document.getElementById('group-b2').style.display = (fig === 'trap' || fig === 'trap_iso') ? 'block' : 'none';
+            document.getElementById('group-h').style.display = (fig === 'qcirc' || fig === 'scirc') ? 'none' : 'block';
+            if(currentType === 'rot_profile') createRotationProfile(); else createRotationSolid();
+        }
+
+        function updateAngleLabel() { document.getElementById('lbl-angle').innerText = document.getElementById('rot-angle').value + '°'; if (currentType === 'rot_solid') createRotationSolid(); }
+        function clearGroups() { while(solidGroup.children.length > 0) solidGroup.remove(solidGroup.children[0]); while(geoGroupH.children.length > 0) geoGroupH.remove(geoGroupH.children[0]); solidGroup.rotation.set(0,0,0); geoGroupH.rotation.set(0,0,0); }
+
+        function getRotPoints(axis) {
+            const fig = document.getElementById('rot-figure').value; const b1 = parseFloat(document.getElementById('rot-b1').value) || 0; const b2 = parseFloat(document.getElementById('rot-b2').value) || 0; let h = parseFloat(document.getElementById('rot-h').value) || 0;
+            let p2d = [], lPts = [];
+            if(fig === 'rect') { p2d = [new THREE.Vector2(0,0), new THREE.Vector2(b1,0), new THREE.Vector2(b1,h), new THREE.Vector2(0,h)]; lPts = [...p2d]; } 
+            else if(fig === 'tri') { p2d = [new THREE.Vector2(0,0), new THREE.Vector2(b1,0), new THREE.Vector2(0,h)]; lPts = [...p2d]; } 
+            else if(fig === 'trap') { p2d = [new THREE.Vector2(0,0), new THREE.Vector2(b1,0), new THREE.Vector2(b2,h), new THREE.Vector2(0,h)]; lPts = [...p2d]; } 
+            else if(fig === 'trap_iso') { p2d = [new THREE.Vector2(-b1,0), new THREE.Vector2(b1,0), new THREE.Vector2(b2,h), new THREE.Vector2(-b2,h)]; lPts = [new THREE.Vector2(0,0), new THREE.Vector2(b1,0), new THREE.Vector2(b2,h), new THREE.Vector2(0,h)]; } 
+            else if(fig === 'qcirc') { h = b1; p2d.push(new THREE.Vector2(0,0)); for(let i=0; i<=32; i++) { let a = (i/32) * (Math.PI/2); p2d.push(new THREE.Vector2(b1 * Math.cos(a), b1 * Math.sin(a))); } p2d.push(new THREE.Vector2(0, h)); lPts = [...p2d]; } 
+            else if(fig === 'scirc') { h = b1; for(let i=0; i<=32; i++) { let a = -Math.PI/2 + (i/32) * Math.PI; p2d.push(new THREE.Vector2(b1 * Math.cos(a), b1 * Math.sin(a))); } p2d.push(new THREE.Vector2(0, b1)); p2d.push(new THREE.Vector2(0, -b1)); for(let i=0; i<=32; i++) { let a = -Math.PI/2 + (i/32) * Math.PI; lPts.push(new THREE.Vector2(b1 * Math.cos(a), b1 * Math.sin(a))); } lPts.push(new THREE.Vector2(0, b1)); lPts.push(new THREE.Vector2(0, -b1)); }
+            let finalP2D = axis === 'y' ? p2d.map(p => new THREE.Vector2(p.x, p.y)) : p2d.map(p => new THREE.Vector2(p.y, p.x)); let lathePoints = lPts.map(p => new THREE.Vector2(p.x, p.y));
+            return { points2D: finalP2D, lathePoints, b1, h, b2, fig };
+        }
+
+        function createRotationProfile() {
+            clearGroups(); currentType = 'rot_profile'; const axis = document.querySelector('input[name="rotAxis"]:checked').value; const { points2D, b1, h, fig } = getRotPoints(axis);
+            if(points2D.length > 0) { const geo = new THREE.ShapeGeometry(new THREE.Shape(points2D)); solidGroup.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x3498db, transparent: true, opacity: 0.6, side: THREE.DoubleSide }))); solidGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x2c3e50, linewidth: 2 }))); }
+            let minAxis = 0, maxAxis = 0; points2D.forEach(p => { let val = axis === 'y' ? p.y : p.x; if (val < minAxis) minAxis = val; if (val > maxAxis) maxAxis = val; });
+            let axPts = axis === 'y' ? [new THREE.Vector3(0, minAxis - 1, 0), new THREE.Vector3(0, maxAxis + 1, 0)] : [new THREE.Vector3(minAxis - 1, 0, 0), new THREE.Vector3(maxAxis + 1, 0, 0)];
+            solidGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(axPts), new THREE.LineBasicMaterial({ color: 0xe74c3c, linewidth: 4 })));
+            addElements(b1, h); setView('front'); updateStats();
+        }
+
+        function createRotationSolid() {
+            clearGroups(); currentType = 'rot_solid'; const axis = document.querySelector('input[name="rotAxis"]:checked').value; const { points2D, lathePoints, b1, h, fig } = getRotPoints(axis);
+            if(points2D.length > 0) { const geo2D = new THREE.ShapeGeometry(new THREE.Shape(points2D)); solidGroup.add(new THREE.Mesh(geo2D, new THREE.MeshBasicMaterial({ color: 0x3498db, transparent: true, opacity: 0.3, side: THREE.DoubleSide }))); solidGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo2D), new THREE.LineBasicMaterial({ color: 0x2c3e50, linewidth: 2, transparent: true, opacity: 0.5 }))); }
+            let minAxis = 0, maxAxis = 0; points2D.forEach(p => { let val = axis === 'y' ? p.y : p.x; if (val < minAxis) minAxis = val; if (val > maxAxis) maxAxis = val; });
+            let axPts = axis === 'y' ? [new THREE.Vector3(0, minAxis - 1, 0), new THREE.Vector3(0, maxAxis + 1, 0)] : [new THREE.Vector3(minAxis - 1, 0, 0), new THREE.Vector3(maxAxis + 1, 0, 0)];
+            solidGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(axPts), new THREE.LineBasicMaterial({ color: 0xe74c3c, linewidth: 4 })));
+            if(lathePoints.length > 1) { const rad = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rot-angle').value)); const mesh = new THREE.Mesh(new THREE.LatheGeometry(lathePoints, 64, 0, rad), getCadMaterial(0xe67e22)); if (axis === 'y') mesh.rotation.set(0, Math.PI / 2, 0); else if (axis === 'x') { const m = new THREE.Matrix4(); m.set(0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1); mesh.quaternion.setFromRotationMatrix(m); } addCadEdges(mesh); solidGroup.add(mesh); }
+            addElements(b1, h); if(camera.position.z === 30 && camera.position.x === 0) setView('iso'); updateStats();
+        }
+
+        function addElements(r, h) {
+            while(geoGroupH.children.length > 0) geoGroupH.remove(geoGroupH.children[0]);
+            const matApo = new THREE.LineBasicMaterial({ color: 0x2980b9, linewidth: 4, depthTest: false, transparent: true, opacity: 1.0 });
+            if (shapeMode === 'poly') { const n = getSides(); const midX = r * (1 + Math.cos(2 * Math.PI / n)) / 2; const midZ = -r * Math.sin(2 * Math.PI / n) / 2; const midSide = new THREE.Vector3(midX, 0, midZ); geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), midSide]), matApo)); if (currentType === 'pyramid' && h > 0) geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,h,0), midSide]), matApo)); } 
+            else if (shapeMode === 'circ') { geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(r,0,0)]), matApo)); if (currentType === 'cone' && h > 0) geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,h,0), new THREE.Vector3(r,0,0)]), matApo)); } 
+            else if (shapeMode === 'rot') { const axis = document.querySelector('input[name="rotAxis"]:checked').value; const { points2D, fig } = getRotPoints(axis); if (fig === 'tri' && points2D.length >= 3) { geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(points2D[1].x, points2D[1].y, 0), new THREE.Vector3(points2D[2].x, points2D[2].y, 0)]), matApo)); } else if ((fig === 'trap' || fig === 'trap_iso') && points2D.length >= 4) { geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(points2D[1].x, points2D[1].y, 0), new THREE.Vector3(points2D[2].x, points2D[2].y, 0)]), matApo)); if (fig === 'trap_iso') geoGroupH.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(points2D[0].x, points2D[0].y, 0), new THREE.Vector3(points2D[3].x, points2D[3].y, 0)]), matApo)); } }
+            toggleElements();
+        }
+
+        function toggleElements() { geoGroupH.visible = document.getElementById('show-h-apo').checked; }
+        function getCadMaterial(colorHex) { return new THREE.MeshPhongMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.25, depthWrite: false }); }
+        function addCadEdges(mesh) { const geo = new THREE.EdgesGeometry(mesh.geometry, 15); const occluder = new THREE.Mesh(mesh.geometry, new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: true })); occluder.renderOrder = 0; mesh.add(occluder); const hLines = new THREE.LineSegments(geo, new THREE.LineDashedMaterial({ color: 0x2c3e50, dashSize: 0.4, gapSize: 0.2, depthTest: true, depthWrite: false, depthFunc: THREE.GreaterDepth, transparent: true, opacity: 0.6 })); hLines.computeLineDistances(); hLines.renderOrder = 1; mesh.add(hLines); const vLines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x2c3e50, linewidth: 2, depthTest: true, depthWrite: false, depthFunc: THREE.LessEqualDepth })); vLines.renderOrder = 2; mesh.add(vLines); mesh.renderOrder = 3; }
+
+        function getRadius() { if (shapeMode === 'poly') { const val = parseFloat(document.getElementById('poly-val').value) || 0.1; const type = document.getElementById('poly-input-type').value; if (type === 'l') { const n = getSides(); return val / (2 * Math.sin(Math.PI / n)); } return val; } return parseFloat(document.getElementById('radius-circ').value) || 0.1; }
+        function getSides() { return shapeMode === 'poly' ? parseInt(document.getElementById('sides').value) : 64; }
+        function createBase2D() { clearGroups(); currentType = 'base'; const r = getRadius(); const mesh = new THREE.Mesh(new THREE.CircleGeometry(r, getSides()).rotateX(-Math.PI/2), getCadMaterial(0x9b59b6)); addCadEdges(mesh); solidGroup.add(mesh); addElements(r, 0); setView('iso'); updateStats(); }
+        function createSolid(type) { clearGroups(); currentType = type; const h = parseFloat(document.getElementById('height').value); const r = getRadius(); let geo = (type==='prism' || type==='cylinder') ? new THREE.CylinderGeometry(r,r,h,getSides()) : new THREE.ConeGeometry(r,h,getSides()); geo.rotateY(Math.PI/2); const mesh = new THREE.Mesh(geo.translate(0, h/2, 0), getCadMaterial(0xe67e22)); addCadEdges(mesh); solidGroup.add(mesh); addElements(r, h); updateStats(); }
+        function rotateObject(axis, deg) { const rad = THREE.MathUtils.degToRad(deg); const axisVec = new THREE.Vector3(axis==='x'?1:0, axis==='y'?1:0, axis==='z'?1:0); solidGroup.rotateOnWorldAxis(axisVec, rad); geoGroupH.rotateOnWorldAxis(axisVec, rad); }
+        function setView(v) { controls.reset(); if(v==='top') { camera.position.set(0,30,0); camera.up.set(0,0,-1); } else if(v==='front') { camera.position.set(0,0,30); camera.up.set(0,1,0); } else if(v==='side') { camera.position.set(30,0,0); camera.up.set(0,1,0); } else { camera.position.set(20,20,20); camera.up.set(0,1,0); } camera.lookAt(0,0,0); }
+        function revealChallenge() { document.getElementById('challenge-mode').checked = false; updateStats(); }
+
+        function formatStat(label, formula, calcStr, resultStr, unit) {
+            const isChallenge = document.getElementById('challenge-mode').checked;
+            if (isChallenge) return `<div class="stat-row"><strong>${label}:</strong> <span>${formula} = <span class="hidden-val" onclick="revealChallenge()" title="Clicca per mostrare il risultato">???</span></span></div>`;
+            else return `<div class="stat-row"><strong>${label}:</strong> <span>${formula} = ${calcStr} = <strong>${resultStr} ${unit}</strong></span></div>`;
+        }
+
+        function updateStats() {
+            const container = document.getElementById('stats-container');
+            calcData = {}; 
+            
+            if(currentType === 'none') { container.innerHTML = '<div style="text-align:center; color:#7f8c8d; font-style:italic;">Disegna una base o un solido per vedere i calcoli.</div>'; return; }
+
+            const useApprox = document.getElementById('use-pi-approx').checked;
+            const PI = useApprox ? 3.14 : Math.PI; const piStr = useApprox ? "3.14" : "π";
+            let html = "", Ab = 0, Al = 0, At = 0, V = 0, Apo = 0, P = 0;
+            const r = getRadius(), h = parseFloat(document.getElementById('height').value || 0), n = getSides();
+
+            if(shapeMode === 'poly') {
+                const fixedNumbers = {3: 0.289, 4: 0.5, 5: 0.688, 6: 0.866, 7: 1.038, 8: 1.207, 9: 1.374, 10: 1.539, 11: 1.703, 12: 1.866};
+                let l = document.getElementById('poly-input-type').value === 'l' ? parseFloat(document.getElementById('poly-val').value) || 0.1 : 2 * r * Math.sin(Math.PI / n);
+                P = n * l;
+                const f = fixedNumbers[n] || parseFloat((Math.cos(Math.PI/n) / (2 * Math.sin(Math.PI/n))).toFixed(3));
+                const apBase = l * f; Ab = (P * apBase) / 2;
+
+                calcData.lato = l.toFixed(2); calcData.perimetro = P.toFixed(2); calcData.apotemaBase = apBase.toFixed(2); calcData.areaBase = Ab.toFixed(2);
+
+                html += formatStat("Lato (l)", "l", `${l.toFixed(2)}`, l.toFixed(2), "cm"); html += formatStat("Perimetro (2p)", "n · l", `${n} · ${l.toFixed(2)}`, P.toFixed(2), "cm"); html += formatStat("Num. Fisso (f)", "Da Tabella", `${f}`, f, ""); html += formatStat("Apotema Base", "l · f", `${l.toFixed(2)} · ${f}`, apBase.toFixed(2), "cm"); html += formatStat("Area Base", "(2p · a) / 2", `(${P.toFixed(2)} · ${apBase.toFixed(2)}) / 2`, Ab.toFixed(2), "cm²");
+
+                if(currentType === 'prism' || currentType === 'pyramid') {
+                    calcData.altezza = h.toFixed(2);
+                    html += `<div style="margin: 10px 0; border-top: 2px solid #bdc3c7;"></div>`;
+                    if(currentType === 'prism') {
+                        Al = P * h; At = 2 * Ab + Al; V = Ab * h;
+                        calcData.areaLat = Al.toFixed(2); calcData.areaTot = At.toFixed(2); calcData.volume = V.toFixed(2);
+                        html += formatStat("Area Lat.", "2p · h", `${P.toFixed(2)} · ${h}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "2 · Ab + Al", `2 · ${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "Ab · h", `${Ab.toFixed(2)} · ${h}`, V.toFixed(2), "cm³");
+                    }
+                    else if(currentType === 'pyramid') {
+                        Apo = Math.sqrt(h*h + apBase*apBase); Al = (P * Apo) / 2; At = Ab + Al; V = (Ab * h) / 3;
+                        calcData.apotemaSolido = Apo.toFixed(2); calcData.areaLat = Al.toFixed(2); calcData.areaTot = At.toFixed(2); calcData.volume = V.toFixed(2);
+                        html += formatStat("Apotema Sol.", "√(h² + a_base²)", `√(${h}² + ${apBase.toFixed(2)}²)`, Apo.toFixed(2), "cm"); html += formatStat("Area Lat.", "(2p · a_sol) / 2", `(${P.toFixed(2)} · ${Apo.toFixed(2)}) / 2`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "Ab + Al", `${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(Ab · h) / 3", `(${Ab.toFixed(2)} · ${h}) / 3`, V.toFixed(2), "cm³");
+                    }
+                }
+            } 
+            else if(shapeMode === 'circ') {
+                Ab = PI * r * r; P = 2 * PI * r;
+                calcData.raggio = r.toFixed(2); calcData.circonferenza = P.toFixed(2); calcData.areaBase = Ab.toFixed(2);
+                html += formatStat("Raggio (r)", "r", `${r.toFixed(2)}`, r.toFixed(2), "cm"); html += formatStat("Circonferenza", "2 · π · r", `2 · ${piStr} · ${r.toFixed(2)}`, P.toFixed(2), "cm"); html += formatStat("Area Base", "π · r²", `${piStr} · ${r.toFixed(2)}²`, Ab.toFixed(2), "cm²");
+
+                if(currentType === 'cylinder' || currentType === 'cone') {
+                    calcData.altezza = h.toFixed(2); html += `<div style="margin: 10px 0; border-top: 2px solid #bdc3c7;"></div>`;
+                    if(currentType === 'cylinder') {
+                        Al = 2 * PI * r * h; At = 2 * Ab + Al; V = Ab * h;
+                        calcData.areaLat = Al.toFixed(2); calcData.areaTot = At.toFixed(2); calcData.volume = V.toFixed(2);
+                        html += formatStat("Area Lat.", "2 · π · r · h", `2 · ${piStr} · ${r.toFixed(2)} · ${h}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "2 · Ab + Al", `2 · ${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "Ab · h", `${Ab.toFixed(2)} · ${h}`, V.toFixed(2), "cm³");
+                    }
+                    else if(currentType === 'cone') {
+                        Apo = Math.sqrt(r*r + h*h); Al = PI * r * Apo; At = Ab + Al; V = (Ab * h) / 3;
+                        calcData.apotemaSolido = Apo.toFixed(2); calcData.areaLat = Al.toFixed(2); calcData.areaTot = At.toFixed(2); calcData.volume = V.toFixed(2);
+                        html += formatStat("Apotema (a)", "√(r² + h²)", `√(${r.toFixed(2)}² + ${h}²)`, Apo.toFixed(2), "cm"); html += formatStat("Area Lat.", "π · r · a", `${piStr} · ${r.toFixed(2)} · ${Apo.toFixed(2)}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "Ab + Al", `${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(Ab · h) / 3", `(${Ab.toFixed(2)} · ${h}) / 3`, V.toFixed(2), "cm³");
+                    }
+                }
+            } 
+            else if(shapeMode === 'rot') {
+                const fig = document.getElementById('rot-figure').value; const rb = parseFloat(document.getElementById('rot-b1').value) || 0; const rh = parseFloat(document.getElementById('rot-h').value) || 0; const r2 = parseFloat(document.getElementById('rot-b2').value) || 0;
+                calcData.baseMag = rb.toFixed(2); if(fig.includes('trap')) calcData.baseMin = r2.toFixed(2); if(fig !== 'scirc' && fig !== 'qcirc') calcData.altezza = rh.toFixed(2);
+
+                if (currentType === 'rot_solid') {
+                    if(fig === 'rect') {
+                        Ab = PI * rb * rb; Al = 2 * PI * rb * rh; At = 2 * Ab + Al; V = Ab * rh;
+                        html += formatStat("Raggio (r)", "r", `${rb}`, `${rb}`, "cm"); html += formatStat("Altezza (h)", "h", `${rh}`, `${rh}`, "cm"); html += formatStat("Area Base", "π · r²", `${piStr} · ${rb}²`, Ab.toFixed(2), "cm²"); html += formatStat("Area Lat.", "2 · π · r · h", `2 · ${piStr} · ${rb} · ${rh}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "2 · Ab + Al", `2 · ${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "Ab · h", `${Ab.toFixed(2)} · ${rh}`, V.toFixed(2), "cm³");
+                    }
+                    else if(fig === 'tri') {
+                        Apo = Math.sqrt(rb*rb + rh*rh); Ab = PI * rb * rb; Al = PI * rb * Apo; At = Ab + Al; V = (Ab * rh) / 3; calcData.apotemaSolido = Apo.toFixed(2);
+                        html += formatStat("Apotema (a)", "√(r² + h²)", `√(${rb}² + ${rh}²)`, Apo.toFixed(2), "cm"); html += formatStat("Area Base", "π · r²", `${piStr} · ${rb}²`, Ab.toFixed(2), "cm²"); html += formatStat("Area Lat.", "π · r · a", `${piStr} · ${rb} · ${Apo.toFixed(2)}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "Ab + Al", `${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(Ab · h) / 3", `(${Ab.toFixed(2)} · ${rh}) / 3`, V.toFixed(2), "cm³");
+                    }
+                    else if(fig === 'trap' || fig === 'trap_iso') {
+                        Apo = Math.sqrt(rh*rh + Math.pow(rb - r2, 2)); let Ab1 = PI * rb * rb; let Ab2 = PI * r2 * r2; Ab = Ab1 + Ab2; Al = PI * (rb + r2) * Apo; At = Ab + Al; V = (PI * rh / 3) * (rb*rb + r2*r2 + rb*r2); calcData.apotemaSolido = Apo.toFixed(2);
+                        html += formatStat("Apotema (a)", "√(h² + (r₁ - r₂)²)", `√(${rh}² + (${rb} - ${r2})²)`, Apo.toFixed(2), "cm"); html += formatStat("Aree Basi", "π·r₁² + π·r₂²", `${Ab1.toFixed(2)} + ${Ab2.toFixed(2)}`, Ab.toFixed(2), "cm²"); html += formatStat("Area Lat.", "π · (r₁ + r₂) · a", `${piStr} · (${rb} + ${r2}) · ${Apo.toFixed(2)}`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "Ab₁ + Ab₂ + Al", `${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(π·h / 3) · (r₁² + r₂² + r₁·r₂)", "...", V.toFixed(2), "cm³");
+                    }
+                    else if(fig === 'scirc') {
+                        At = 4 * PI * rb * rb; V = (4/3) * PI * Math.pow(rb, 3);
+                        html += formatStat("Raggio (r)", "r", `${rb}`, `${rb}`, "cm"); html += formatStat("Area Totale", "4 · π · r²", `4 · ${piStr} · ${rb}²`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(4/3) · π · r³", `(4/3) · ${piStr} · ${rb}³`, V.toFixed(2), "cm³");
+                    }
+                    else if(fig === 'qcirc') {
+                        Ab = PI * rb * rb; Al = 2 * PI * rb * rb; At = Ab + Al; V = (2/3) * PI * Math.pow(rb, 3);
+                        html += formatStat("Area Base", "π · r²", `${piStr} · ${rb}²`, Ab.toFixed(2), "cm²"); html += formatStat("Area Calotta", "2 · π · r²", `2 · ${piStr} · ${rb}²`, Al.toFixed(2), "cm²"); html += formatStat("Area Totale", "Ab + Area Calotta", `${Ab.toFixed(2)} + ${Al.toFixed(2)}`, At.toFixed(2), "cm²"); html += formatStat("Volume", "(2/3) · π · r³", `(2/3) · ${piStr} · ${rb}³`, V.toFixed(2), "cm³");
+                    }
+                    calcData.areaBase = Ab ? Ab.toFixed(2) : null; calcData.areaLat = Al ? Al.toFixed(2) : null; calcData.areaTot = At ? At.toFixed(2) : null; calcData.volume = V ? V.toFixed(2) : null;
+                } else { html += `<div style="text-align:center; color:#7f8c8d; font-style:italic;">Genera il solido 3D per i calcoli finali.</div>`; }
+            }
+            container.innerHTML = html;
+        }
+
+        // --- SISTEMA DI ESPORTAZIONE PDF AVANZATO ---
+        function downloadImage() {
+            const canvas = renderer.domElement; const ow = canvas.clientWidth, oh = canvas.clientHeight;
+            renderer.setSize(ow * 3, oh * 3, false); scene.updateMatrixWorld(true); scene.traverse(o => { if(o.isLine && o.material && o.material.isLineDashedMaterial) o.computeLineDistances(); }); renderer.render(scene, camera);
+            const link = document.createElement('a'); link.download = 'Vista_3D.png'; link.href = canvas.toDataURL('image/png'); link.click();
+            renderer.setSize(ow, oh, false); renderer.render(scene, camera);
+        }
+
+        async function processPDF() {
+            if(!window.jspdf) { alert("Libreria PDF non caricata."); return; }
+            closeModals();
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4'); // A4: 210 x 297 mm
+            const canvas = renderer.domElement;
+            const origPos = camera.position.clone(), origUp = camera.up.clone();
+            const oLeft = camera.left, oRight = camera.right, oTop = camera.top, oBottom = camera.bottom;
+            const ow = canvas.clientWidth, oh = canvas.clientHeight;
+
+            controls.enabled = false; renderer.setSize(1024, 1024, false);
+            
+            const box = new THREE.Box3().setFromObject(solidGroup);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.isEmpty() ? new THREE.Vector3(0,0,0) : new THREE.Vector3(0, size.y/2, 0);
+            const maxDim = Math.max(size.x, size.y, size.z, 0.1);
+            const zoom = maxDim * 0.65; 
+
+            camera.left = -zoom; camera.right = zoom; camera.top = zoom; camera.bottom = -zoom; camera.updateProjectionMatrix();
+
+            let currentY = 15;
+
+            // 1. INTESTAZIONE STUDENTE
+            if(document.getElementById('pdf-chk-alunno').checked) {
+                doc.setFontSize(11);
+                doc.text("Alunno: __________________________________________", 15, currentY);
+                doc.text("Classe: _______   Data: _______   Voto: _______", 110, currentY);
+                currentY += 15;
+            }
+
+            // 2. TITOLO
+            const pdfTitle = document.getElementById('pdf-title').value || "Esercizio Geometria";
+            doc.setFontSize(16); doc.setFont("helvetica", "bold");
+            doc.text(pdfTitle, 105, currentY, { align: "center" });
+            currentY += 10;
+
+            // 3. VISTE 3D (O RIQUADRI VUOTI DA DISEGNARE)
+            const imgSize = 75;
+            const views = [
+                { name: "P.V. (Fronte)", camPos: [0, center.y, maxDim*2], up: [0,1,0], x: 20, y: currentY, show: document.getElementById('pdf-view-pv').checked },
+                { name: "P.L. (Fianco)", camPos: [maxDim*2, center.y, 0], up: [0,1,0], x: 115, y: currentY, show: document.getElementById('pdf-view-pl').checked },
+                { name: "P.O. (Pianta)", camPos: [0, maxDim*2, 0], up: [0,0,-1], x: 20, y: currentY + imgSize + 10, show: document.getElementById('pdf-view-po').checked },
+                { name: "Assonometria", camPos: [maxDim, maxDim, maxDim], up: [0,1,0], x: 115, y: currentY + imgSize + 10, show: document.getElementById('pdf-view-3d').checked }
+            ];
+
+            for (let v of views) {
+                if(v.show) {
+                    camera.position.set(...v.camPos); camera.up.set(...v.up); camera.lookAt(center.x, center.y, center.z); 
+                    camera.updateProjectionMatrix(); scene.updateMatrixWorld(true);
+                    scene.traverse(o => { if(o.isLine && o.material && o.material.isLineDashedMaterial) o.computeLineDistances(); });
+                    renderer.render(scene, camera);
+                    doc.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', v.x, v.y, imgSize, imgSize);
+                } else {
+                    doc.setDrawColor(180, 180, 180);
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(v.x, v.y, imgSize, imgSize, "FD");
+                    doc.setDrawColor(0, 0, 0); // reset
+                }
+                doc.setFontSize(10); doc.setFont("helvetica", "normal");
+                doc.text(v.name, v.x + (imgSize/2), v.y + imgSize + 5, { align: "center" });
+            }
+
+            currentY += (imgSize * 2) + 25;
+
+            // 4. TESTO DEL PROBLEMA
+            const problemText = document.getElementById('pdf-testo').value.trim();
+            if (problemText) {
+                doc.setFontSize(11); doc.setFont("helvetica", "italic");
+                const splitText = doc.splitTextToSize("Problema: " + problemText, 180);
+                doc.text(splitText, 15, currentY);
+                currentY += (splitText.length * 6) + 5;
+            }
+
+            // 5. DATI TECNICI (Dati da fornire vs Dati da calcolare)
+            doc.setFontSize(12); doc.setFont("helvetica", "bold");
+            doc.text("Dati a disposizione:", 15, currentY);
+            currentY += 2; doc.setLineWidth(0.5); doc.line(15, currentY, 195, currentY); currentY += 6;
+            
+            doc.setFontSize(10); doc.setFont("helvetica", "normal");
+            let col1 = 15, col2 = 105, isCol2 = false;
+
+            function printStat(label, value, unit) {
+                if(value) {
+                    doc.text(`• ${label}: ${value} ${unit}`, isCol2 ? col2 : col1, currentY);
+                    if(isCol2) { currentY += 7; isCol2 = false; } else isCol2 = true;
+                }
+            }
+
+            if(document.getElementById('pdf-chk-misure').checked) {
+                if(calcData.lato) printStat("Lato Base", calcData.lato, "cm");
+                if(calcData.raggio) printStat("Raggio Base", calcData.raggio, "cm");
+                if(calcData.baseMag) printStat("Misura Raggio/Base Magg.", calcData.baseMag, "cm");
+                if(calcData.baseMin) printStat("Misura Base Minore", calcData.baseMin, "cm");
+            }
+            if(document.getElementById('pdf-chk-h').checked && calcData.altezza) printStat("Altezza Solido (h)", calcData.altezza, "cm");
+            if(document.getElementById('pdf-chk-p').checked) {
+                if(calcData.perimetro) printStat("Perimetro Base (2p)", calcData.perimetro, "cm");
+                if(calcData.circonferenza) printStat("Circonferenza", calcData.circonferenza, "cm");
+            }
+            if(document.getElementById('pdf-chk-apo').checked) {
+                if(calcData.apotemaBase) printStat("Apotema Base", calcData.apotemaBase, "cm");
+                if(calcData.apotemaSolido) printStat("Apotema Solido", calcData.apotemaSolido, "cm");
+            }
+            if(document.getElementById('pdf-chk-ab').checked && calcData.areaBase) printStat("Area di Base (Ab)", calcData.areaBase, "cm²");
+            if(document.getElementById('pdf-chk-al').checked && calcData.areaLat) printStat("Area Laterale (Al)", calcData.areaLat, "cm²");
+            if(document.getElementById('pdf-chk-at').checked && calcData.areaTot) printStat("Area Totale (At)", calcData.areaTot, "cm²");
+            if(document.getElementById('pdf-chk-v').checked && calcData.volume) printStat("Volume (V)", calcData.volume, "cm³");
+
+            // Generazione PDF
+            let cleanName = currentType.toUpperCase().replace('_', ' ');
+            doc.save(`Scheda_${cleanName}.pdf`);
+            
+            // Ripristino
+            renderer.setSize(ow, oh, false);
+            camera.left = oLeft; camera.right = oRight; camera.top = oTop; camera.bottom = oBottom;
+            camera.position.copy(origPos); camera.up.copy(origUp); camera.updateProjectionMatrix();
+            controls.enabled = true; controls.update(); renderer.render(scene, camera);
+        }
+
+        window.onload = init;
+    </script>
+
+<script async="" src="Laboratorio%20Geometria%203D%20-%20Didattica%202.0_files/hud" data-nf-variant="public" data-netlify-site-id="4fa6fad2-f759-4089-a67f-bb59bf02fa31" data-app-host="app.netlify.com"></script>
+<iframe id="nl-badge-frame" title="Powered by Netlify" style="position: fixed; bottom: 0px; right: 0px; border: 0px; margin: 0px; padding: 0px; background: transparent; color-scheme: dark; z-index: 2147483645; width: 197px; height: 64px; clip-path: path(&quot;M 3 3 H 184 V 51 H 3 Z&quot;);" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;color-scheme&quot; content=&quot;dark&quot;&gt;&lt;style&gt;
+    :root{--nl-vw:1400px;--nl-vh:700px}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+    body{display:flex;align-items:flex-end;justify-content:flex-end;height:100vh;
+      padding:8px 18px 18px 8px;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#f4f9f9;-webkit-font-smoothing:antialiased}
+    .nl-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:max-content;max-width:calc(var(--nl-vw,100vw) - 26px)}
+    button{font-family:inherit;cursor:pointer}
+    :focus-visible{outline:2px solid #32e6e2;outline-offset:2px;border-radius:6px}
+    .nl-icon-btn{position:relative;flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid transparent;background:transparent;color:#d5e3e6;transition:background .15s ease,color .15s ease}
+    .nl-icon-btn:hover{background:rgba(255,255,255,0.08);color:#f4f9f9}
+    .nl-tap::after{content:&quot;&quot;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:max(100%,44px);height:max(100%,44px)}
+    @keyframes nl-rise{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+  
+      .nl-card{position:relative;display:none;width:min(340px,calc(var(--nl-vw,100vw) - 26px));max-height:calc(var(--nl-vh,100vh) - 84px);overflow-y:auto;background:linear-gradient(180deg,#132832 0%,#0e1e25 100%);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:18px;transform-origin:bottom right;animation:nl-rise .3s cubic-bezier(.34,1.4,.4,1) both}
+      .nl-card.open{display:block}
+      .nl-card-close{position:absolute;top:10px;right:10px}
+      .nl-card h2{margin:0;padding-right:30px;font-size:16px;font-weight:750;letter-spacing:-0.015em;line-height:1.35}
+      .nl-card h2 em{font-style:normal;background:linear-gradient(90deg,#32e6e2,#4d7cfe,#9a6bff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+      .nl-card p{margin:8px 0 0;font-size:12.5px;color:#d5e3e6}
+      .nl-prompt{position:relative;margin-top:14px;background:#10222b;border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:10px 12px;transition:border-color .15s ease,box-shadow .15s ease}
+      .nl-prompt:focus-within{border-color:#05bdba;box-shadow:0 0 0 3px rgba(5,189,186,0.18)}
+      .nl-prompt textarea{display:block;width:100%;height:38px;resize:none;border:0;outline:none;background:transparent;color:#f4f9f9;font:inherit;font-size:13px;line-height:19px;padding:0 28px 0 0}
+      .nl-prompt textarea::placeholder{color:#a9bdc2}
+      .nl-send{position:absolute;right:9px;bottom:9px;width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#05bdba;color:#02191b;transition:background .15s ease}
+      .nl-send:hover{background:#32e6e2}
+      @media (pointer: coarse){
+        .nl-prompt textarea{font-size:16px;line-height:21px;height:42px}
+      }
+      .nl-or{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#a9bdc2}
+      .nl-or::before,.nl-or::after{content:&quot;&quot;;flex:1;height:1px;background:rgba(255,255,255,0.09)}
+      .nl-drop{display:flex;align-items:center;justify-content:space-between;gap:6px;text-decoration:none;background:#1b3a45;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;color:#cfe0e3;transition:background .15s ease,color .15s ease,border-color .15s ease}
+      .nl-drop:hover{background:#224753;color:#f4f9f9;border-color:rgba(50,230,226,0.3)}
+      .nl-drop .nl-arrow{transition:transform .18s cubic-bezier(.34,1.4,.4,1)}
+      .nl-drop:hover .nl-arrow{transform:translateX(3px)}
+      .nl-badge{display:flex;align-items:center;gap:9px;white-space:nowrap;border:1px solid rgba(255,255,255,0.09);background:linear-gradient(180deg,#142b34,#0e1e25);color:#f4f9f9;border-radius:999px;padding:9px 14px 9px 11px;font-size:13px;font-weight:600;letter-spacing:0.01em;transition:border-color .2s ease}
+      .nl-badge:hover{border-color:rgba(50,230,226,0.26)}
+      .nl-hide{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:#a9bdc2;font-size:11.5px;font-weight:600;padding:4px;border-radius:8px;transition:color .15s ease}
+      .nl-hide:hover{color:#d5e3e6;text-decoration:underline}
+      .nl-badge-label{color:#d5e3e6;font-weight:500}
+      .nl-badge-brand{font-weight:750}
+    &lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+      &lt;div class=&quot;nl-wrap&quot;&gt;
+        &lt;section class=&quot;nl-card&quot; id=&quot;nl-card&quot; aria-label=&quot;Build your own site on Netlify&quot;&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-icon-btn nl-tap nl-card-close&quot; id=&quot;nl-card-close&quot; aria-label=&quot;Close&quot;&gt;&lt;svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.9&quot; stroke-linecap=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+          &lt;h2&gt;&lt;em&gt;Build your own site with Netlify&lt;/em&gt;&lt;/h2&gt;
+          &lt;p&gt;Describe what you want, and an AI agent designs, builds and deploys it in minutes.&lt;/p&gt;
+          &lt;form class=&quot;nl-prompt&quot; action=&quot;https://app.netlify.com/start&quot; method=&quot;get&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;textarea name=&quot;prompt&quot; rows=&quot;2&quot; required maxlength=&quot;300&quot; autocomplete=&quot;off&quot;
+                      enterkeyhint=&quot;go&quot;
+                      placeholder=&quot;A shop for my handmade surfboards&amp;hellip;&quot;
+                      aria-label=&quot;Describe the site you want to build&quot;&gt;&lt;/textarea&gt;
+            &lt;button type=&quot;submit&quot; class=&quot;nl-send nl-tap&quot; aria-label=&quot;Build this site&quot;&gt;&lt;svg width=&quot;13&quot; height=&quot;13&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 12.75v-9.5M3.9 7.35 8 3.25l4.1 4.1&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_source&quot; value=&quot;netlify_badge&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_campaign&quot; value=&quot;loops&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_medium&quot; value=&quot;owned&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_content&quot; value=&quot;prompt&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;utm_id&quot; value=&quot;4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot;&gt;
+            
+          &lt;/form&gt;
+          &lt;div class=&quot;nl-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/div&gt;
+          &lt;a class=&quot;nl-drop&quot; href=&quot;https://app.netlify.com/drop?utm_source=netlify_badge&amp;utm_campaign=loops&amp;utm_medium=owned&amp;utm_content=drop&amp;utm_id=4fa6fad2-f759-4089-a67f-bb59bf02fa31&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+            &lt;span&gt;Drop a site you already have&lt;/span&gt;&lt;span class=&quot;nl-arrow&quot; aria-hidden=&quot;true&quot;&gt;&amp;rarr;&lt;/span&gt;
+          &lt;/a&gt;
+          &lt;button type=&quot;button&quot; class=&quot;nl-hide&quot; id=&quot;nl-hide&quot;&gt;Hide this badge&lt;/button&gt;
+        &lt;/section&gt;
+        &lt;button type=&quot;button&quot; class=&quot;nl-badge&quot; id=&quot;nl-badge&quot; aria-expanded=&quot;false&quot; aria-controls=&quot;nl-card&quot;
+                aria-label=&quot;Powered by Netlify — build your own site&quot;&gt;
+          &lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 32 32&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;path fill=&quot;#fff&quot; d=&quot;M17.9922 18.3225H14.005L13.6746 17.9921V14.005L14.005 13.6746H17.9922L18.3226 14.005V17.9921L17.9922 18.3225Z&quot;/&gt;
+    &lt;g fill=&quot;#05BDBA&quot;&gt;
+      &lt;path d=&quot;M9.6958 24.3311H9.35705L7.6661 22.6401V22.3041L10.2511 19.7164L12.042 19.7191L12.2808 19.9552V21.7461L9.6958 24.3311Z&quot;/&gt;
+      &lt;path d=&quot;M7.6661 9.69576V9.35701L9.35705 7.66606H9.6958L12.2808 10.2511V12.0392L12.042 12.2808H10.2511L7.6661 9.69576Z&quot;/&gt;
+      &lt;path d=&quot;M10.0457 17.4369H0.205466L0 17.2314V14.7658L0.205466 14.5603H10.0457L10.2511 14.7658V17.2314L10.0457 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M31.7945 17.4369H21.9544L21.7489 17.2314V14.7658L21.9544 14.5603H31.7945L32 14.7658V17.2314L31.7945 17.4369Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 10.0456V2.66547L14.7686 2.46001H17.2343L17.4396 2.66547V10.0456L17.2343 10.2511H14.7686L14.5631 10.0456Z&quot;/&gt;
+      &lt;path d=&quot;M14.5631 29.3316V21.9515L14.7686 21.746H17.2343L17.4396 21.9515V29.3316L17.2343 29.5371H14.7686L14.5631 29.3316Z&quot;/&gt;
+    &lt;/g&gt;&lt;/svg&gt;
+          &lt;span&gt;&lt;span class=&quot;nl-badge-label&quot;&gt;Powered by&lt;/span&gt; &lt;span class=&quot;nl-badge-brand&quot;&gt;Netlify&lt;/span&gt;&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;script&gt;
+        
+    function nlSend(){
+      var wrap=document.querySelector('.nl-wrap'),boxes=[];
+      for(var i=0;i&lt;wrap.children.length;i++){
+        var c=wrap.children[i];
+        if(!c.offsetWidth||!c.offsetHeight)continue;
+        boxes.push({x:c.offsetLeft-wrap.offsetLeft+8,
+                    y:c.offsetTop-wrap.offsetTop+8,
+                    w:c.offsetWidth,h:c.offsetHeight});
+      }
+      parent.postMessage({nlHud:'resize',
+        width:wrap.offsetWidth+26,
+        height:wrap.offsetHeight+26,
+        boxes:boxes},'*');
+    }
+    function nlSendSoon(){requestAnimationFrame(nlSend);}
+    window.addEventListener('load',nlSend);
+    window.addEventListener('message',function(e){
+      if(e.source!==parent||!e.data||e.data.nlHud!=='viewport')return;
+      var s=document.documentElement.style;
+      s.setProperty('--nl-vw',e.data.w+'px');
+      s.setProperty('--nl-vh',e.data.h+'px');
+      document.documentElement.classList.toggle('nl-narrow',e.data.w&lt;600);
+      nlSendSoon();
+    });
+    var nlCoarse=window.matchMedia('(pointer: coarse)').matches;
+    function nlSubmit(form){
+      if(form.requestSubmit)return form.requestSubmit();
+      if(form.checkValidity&amp;&amp;!form.checkValidity())
+        return form.reportValidity&amp;&amp;form.reportValidity();
+      form.submit();
+    }
+  
+        var badge=document.getElementById('nl-badge'),card=document.getElementById('nl-card'),
+            box=card.querySelector('textarea');
+        function setOpen(open){
+          card.classList.toggle('open',open);
+          badge.setAttribute('aria-expanded',open?'true':'false');
+          nlSendSoon();
+          if(open&amp;&amp;!nlCoarse)box.focus();
+        }
+        box.addEventListener('keydown',function(e){
+          if(e.key==='Enter'&amp;&amp;!e.shiftKey){e.preventDefault();nlSubmit(box.form);}
+        });
+        badge.addEventListener('click',function(){setOpen(!card.classList.contains('open'));});
+        document.getElementById('nl-card-close').addEventListener('click',function(){setOpen(false);badge.focus();});
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&amp;&amp;card.classList.contains('open')){setOpen(false);badge.focus();}
+        });
+        document.getElementById('nl-hide').addEventListener('click',function(){
+          parent.postMessage({nlHud:'state',value:'hidden'},'*');
+        });
+      &lt;/script&gt;
+    &lt;/body&gt;&lt;/html&gt;" data-nl-ready="1"></iframe></body></html>
